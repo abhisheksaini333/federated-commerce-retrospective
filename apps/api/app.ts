@@ -5,6 +5,7 @@ import {
   shippingCents,
   type CheckoutRequest,
   type Order,
+  type Product,
 } from "../../packages/contracts";
 
 const object = (value: unknown): value is Record<string, unknown> =>
@@ -12,7 +13,7 @@ const object = (value: unknown): value is Record<string, unknown> =>
 const exactKeys = (value: Record<string, unknown>, keys: string[]) =>
   Object.keys(value).every((key) => keys.includes(key));
 
-function parseCheckout(value: unknown): CheckoutRequest | null {
+function parseCheckout(value: unknown, catalog: readonly Product[]): CheckoutRequest | null {
   if (
     !object(value) ||
     !exactKeys(value, ["items", "customerName", "shipping"])
@@ -38,7 +39,7 @@ function parseCheckout(value: unknown): CheckoutRequest | null {
       return null;
     if (
       typeof item.productId !== "string" ||
-      !seedProducts.some((p) => p.id === item.productId) ||
+      !catalog.some((p) => p.id === item.productId) ||
       seen.has(item.productId)
     )
       return null;
@@ -64,9 +65,13 @@ function parseCheckout(value: unknown): CheckoutRequest | null {
 }
 
 /** One isolated in-memory store per app; synchronous mutation is atomic in one Node process. */
-export function createApp() {
+export interface AppOptions { products?: readonly Product[]; now?: () => Date; idFactory?: () => string }
+
+export function createApp(options: AppOptions = {}) {
   const app = express();
-  const products = seedProducts.map((product) => ({ ...product }));
+  const products = (options.products ?? seedProducts).map((product) => ({ ...product }));
+  const now = options.now ?? (() => new Date());
+  const idFactory = options.idFactory ?? (() => `FW-${randomUUID().slice(0, 8).toUpperCase()}`);
   const orders = new Map<string, Order>();
   const receipts = new Map<string, { fingerprint: string; order: Order }>();
   app.disable("x-powered-by");
@@ -85,7 +90,7 @@ export function createApp() {
   );
   app.post("/api/checkout", (req, res) => {
     const key = req.get("Idempotency-Key");
-    const payload = parseCheckout(req.body);
+    const payload = parseCheckout(req.body, products);
     if (!key || !/^[a-zA-Z0-9_-]{8,100}$/.test(key) || !payload) {
       res.status(400).json({
         code: "INVALID_CHECKOUT",
@@ -125,7 +130,7 @@ export function createApp() {
     );
     const delivery = shippingCents(payload.shipping, subtotalCents);
     const order: Order = {
-      id: `FW-${randomUUID().slice(0, 8).toUpperCase()}`,
+      id: idFactory(),
       customerName: payload.customerName,
       shipping: payload.shipping,
       items: lines.map(({ item, product }) => ({
@@ -136,7 +141,7 @@ export function createApp() {
       subtotalCents,
       shippingCents: delivery,
       totalCents: subtotalCents + delivery,
-      createdAt: new Date().toISOString(),
+      createdAt: now().toISOString(),
       status: "placed",
     };
     for (const { item, product } of lines) product.stock -= item.quantity;

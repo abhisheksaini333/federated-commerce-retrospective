@@ -180,3 +180,14 @@ test("invalid JSON and oversized bodies return bounded structured errors", async
   });
   assert.equal(large.status, 413);
 });
+
+
+test("API fixture options isolate catalog prices and deterministic order identity", async () => {
+  const app = createApp({ products: [{ id: 'fixture', name: 'Fixture', category: 'Tools', description: 'Synthetic', priceCents: 1500, stock: 2, color: '#fff', artwork: 'pencil' }], now: () => new Date('2000-01-01T00:00:00Z'), idFactory: () => 'fixture-order' });
+  const response = await checkout(app, 'fixture-key', { ...body, items: [{ productId: 'fixture', quantity: 1 }] });
+  assert.equal(response.status, 201);
+  assert.equal(response.body.order.id, 'fixture-order');
+  assert.equal(response.body.order.createdAt, '2000-01-01T00:00:00.000Z');
+  assert.equal(response.body.order.totalCents, 2100);
+  assert.equal((await request(createApp()).get('/api/products')).body.products[0].priceCents, 2400);
+});
