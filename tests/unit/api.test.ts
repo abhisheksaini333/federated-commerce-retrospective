@@ -191,3 +191,11 @@ test("API fixture options isolate catalog prices and deterministic order identit
   assert.equal(response.body.order.totalCents, 2100);
   assert.equal((await request(createApp()).get('/api/products')).body.products[0].priceCents, 2400);
 });
+
+
+test("parser rejections retain no-store and nosniff headers", async () => {
+  const response = await request(createApp()).post('/api/checkout').set('Content-Type', 'application/json').send('{');
+  assert.equal(response.status, 400);
+  assert.equal(response.headers['cache-control'], 'no-store');
+  assert.equal(response.headers['x-content-type-options'], 'nosniff');
+});

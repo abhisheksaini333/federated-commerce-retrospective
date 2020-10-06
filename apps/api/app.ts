@@ -75,12 +75,12 @@ export function createApp(options: AppOptions = {}) {
   const orders = new Map<string, Order>();
   const receipts = new Map<string, { fingerprint: string; order: Order }>();
   app.disable("x-powered-by");
-  app.use(express.json({ limit: "16kb" }));
   app.use((_req, res, next) => {
     res.set("Cache-Control", "no-store");
     res.set("X-Content-Type-Options", "nosniff");
     next();
   });
+  app.use(express.json({ limit: "16kb" }));
   app.get("/api/health", (_req, res) =>
     res.json({ status: "ok", mode: "synthetic-local-demo" }),
   );
