@@ -199,3 +199,15 @@ test("parser rejections retain no-store and nosniff headers", async () => {
   assert.equal(response.headers['cache-control'], 'no-store');
   assert.equal(response.headers['x-content-type-options'], 'nosniff');
 });
+
+
+test("unsupported charset and malformed route escapes remain client errors", async () => {
+  const app = createApp();
+  const charset = await request(app).post('/api/checkout').set('Content-Type', 'application/json; charset=bogus').send(JSON.stringify(body));
+  assert.equal(charset.status, 415);
+  assert.equal(charset.body.code, 'UNSUPPORTED_MEDIA_TYPE');
+  const uri = await request(app).patch('/api/orders/%').send({status:'fulfilled'});
+  assert.equal(uri.status, 400);
+  assert.equal(uri.body.code, 'INVALID_REQUEST');
+  assert.equal(uri.body.error.includes('URIError'), false);
+});

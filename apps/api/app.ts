@@ -173,24 +173,9 @@ export function createApp(options: AppOptions = {}) {
     res.status(404).json({ code: "NOT_FOUND", error: "Route not found." }),
   );
   const errors: ErrorRequestHandler = (error, _req, res, _next) => {
-    const status =
-      error.type === "entity.too.large"
-        ? 413
-        : error.type === "entity.parse.failed"
-          ? 400
-          : 500;
-    res.status(status).json({
-      code:
-        status === 413
-          ? "BODY_TOO_LARGE"
-          : status === 400
-            ? "INVALID_JSON"
-            : "INTERNAL_ERROR",
-      error:
-        status === 500
-          ? "The demo service encountered an error."
-          : "Send a valid JSON request smaller than 16 KB.",
-    });
+    const status = error.type === 'entity.too.large' ? 413 : error.status === 415 ? 415 : error instanceof URIError || (error.status >= 400 && error.status < 500) ? 400 : 500;
+    const code = status === 413 ? 'BODY_TOO_LARGE' : status === 415 ? 'UNSUPPORTED_MEDIA_TYPE' : error.type === 'entity.parse.failed' ? 'INVALID_JSON' : status === 400 ? 'INVALID_REQUEST' : 'INTERNAL_ERROR';
+    res.status(status).json({ code, error: status === 500 ? 'The demo service encountered an error.' : status === 415 ? 'Use UTF-8 JSON for this request.' : 'Send a valid JSON request smaller than 16 KB.' });
   };
   app.use(errors);
   return app;
