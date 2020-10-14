@@ -80,6 +80,12 @@ export function createApp(options: AppOptions = {}) {
     res.set("X-Content-Type-Options", "nosniff");
     next();
   });
+  app.use((req, res, next) => {
+    if (['POST', 'PATCH', 'PUT'].includes(req.method) && req.path.startsWith('/api/') && !req.is('application/json')) {
+      res.status(415).json({ code: 'UNSUPPORTED_MEDIA_TYPE', error: 'Send this request as application/json.' }); return;
+    }
+    next();
+  });
   app.use(express.json({ limit: "16kb" }));
   app.get("/api/health", (_req, res) =>
     res.json({ status: "ok", mode: "synthetic-local-demo" }),

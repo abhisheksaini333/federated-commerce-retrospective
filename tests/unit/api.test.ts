@@ -211,3 +211,15 @@ test("unsupported charset and malformed route escapes remain client errors", asy
   assert.equal(uri.body.code, 'INVALID_REQUEST');
   assert.equal(uri.body.error.includes('URIError'), false);
 });
+
+
+test("mutation routes reject non-JSON bodies without creating orders", async () => {
+ const app=createApp();
+ for (const mime of ['text/plain', 'application/x-www-form-urlencoded']) {
+  const response=await request(app).post('/api/checkout').set('Content-Type',mime).set('Idempotency-Key','mime-contract').send(JSON.stringify(body));
+  assert.equal(response.status,415);
+  assert.equal(response.body.code,'UNSUPPORTED_MEDIA_TYPE');
+ }
+ assert.equal((await request(app).get('/api/orders')).body.orders.length,0);
+ assert.equal((await checkout(app)).status,201);
+});
