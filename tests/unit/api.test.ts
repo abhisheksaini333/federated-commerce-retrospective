@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import request from "supertest";
+import supertest from 'supertest';
+// Each assertion starts a short-lived server; do not retain sockets beyond it.
+const request = (app: Parameters<typeof supertest>[0]) => supertest.agent(app).set('Connection', 'close');
 import { createApp } from "../../apps/api/app";
 
 const body = {
@@ -222,4 +224,14 @@ test("mutation routes reject non-JSON bodies without creating orders", async () 
  }
  assert.equal((await request(app).get('/api/orders')).body.orders.length,0);
  assert.equal((await checkout(app)).status,201);
+});
+
+
+test("known resources expose allowed methods while missing routes remain 404", async () => {
+ const app=createApp();
+ const response=await request(app).delete('/api/products');
+ assert.equal(response.status,405); assert.equal(response.headers.allow,'GET, HEAD');
+ assert.equal(response.body.code,'METHOD_NOT_ALLOWED');
+ assert.equal((await request(app).delete('/api/missing')).status,404);
+ assert.equal((await request(app).head('/api/products')).status,200);
 });

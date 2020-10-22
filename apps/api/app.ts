@@ -175,6 +175,16 @@ export function createApp(options: AppOptions = {}) {
     order.status = "fulfilled";
     res.json({ order });
   });
+  const allowedMethods: [RegExp, string][] = [
+    [/^\/api\/(health|products|orders)$/, 'GET, HEAD'],
+    [/^\/api\/checkout$/, 'POST'],
+    [/^\/api\/orders\/[^/]+$/, 'PATCH'],
+  ];
+  app.use((req, res, next) => {
+    const rule = allowedMethods.find(([pattern]) => pattern.test(req.path));
+    if (!rule) { next(); return; }
+    res.set('Allow', rule[1]).status(405).json({ code: 'METHOD_NOT_ALLOWED', error: 'This resource does not support that method.' });
+  });
   app.use((_req, res) =>
     res.status(404).json({ code: "NOT_FOUND", error: "Route not found." }),
   );
