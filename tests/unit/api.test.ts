@@ -235,3 +235,11 @@ test("known resources expose allowed methods while missing routes remain 404", a
  assert.equal((await request(app).delete('/api/missing')).status,404);
  assert.equal((await request(app).head('/api/products')).status,200);
 });
+
+
+test("checkout validation returns actionable field paths", async () => {
+ const result=await checkout(createApp(),'field-errors',{...body,customerName:'',items:[{productId:'notebook',quantity:0}]});
+ assert.equal(result.status,400);
+ assert.deepEqual(result.body.issues.map((issue: {path:string})=>issue.path).sort(),['customerName','items.0.quantity']);
+ assert.equal((await checkout(createApp(),'unknown-fields',{...body,unexpected:true})).body.issues[0].path,'unexpected');
+});

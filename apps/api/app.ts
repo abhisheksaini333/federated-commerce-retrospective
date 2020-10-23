@@ -1,3 +1,4 @@
+import { validateCheckout } from '../../packages/contracts/validation';
 import express, { type ErrorRequestHandler } from "express";
 import { randomUUID } from "node:crypto";
 import { seedProducts } from "./catalog";
@@ -12,57 +13,6 @@ const object = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === "object" && !Array.isArray(value);
 const exactKeys = (value: Record<string, unknown>, keys: string[]) =>
   Object.keys(value).every((key) => keys.includes(key));
-
-function parseCheckout(value: unknown, catalog: readonly Product[]): CheckoutRequest | null {
-  if (
-    !object(value) ||
-    !exactKeys(value, ["items", "customerName", "shipping"])
-  )
-    return null;
-  if (
-    typeof value.customerName !== "string" ||
-    !value.customerName.trim() ||
-    value.customerName.length > 60
-  )
-    return null;
-  if (value.shipping !== "standard" && value.shipping !== "express")
-    return null;
-  if (
-    !Array.isArray(value.items) ||
-    value.items.length < 1 ||
-    value.items.length > 6
-  )
-    return null;
-  const seen = new Set<string>();
-  for (const item of value.items) {
-    if (!object(item) || !exactKeys(item, ["productId", "quantity"]))
-      return null;
-    if (
-      typeof item.productId !== "string" ||
-      !catalog.some((p) => p.id === item.productId) ||
-      seen.has(item.productId)
-    )
-      return null;
-    if (
-      typeof item.quantity !== "number" ||
-      !Number.isInteger(item.quantity) ||
-      item.quantity < 1 ||
-      item.quantity > 10
-    )
-      return null;
-    seen.add(item.productId);
-  }
-  return {
-    items: value.items
-      .map((item) => ({
-        productId: item.productId as string,
-        quantity: item.quantity as number,
-      }))
-      .sort((a, b) => a.productId.localeCompare(b.productId)),
-    customerName: value.customerName.trim(),
-    shipping: value.shipping,
-  };
-}
 
 /** One isolated in-memory store per app; synchronous mutation is atomic in one Node process. */
 export interface AppOptions { products?: readonly Product[]; now?: () => Date; idFactory?: () => string }
@@ -96,10 +46,12 @@ export function createApp(options: AppOptions = {}) {
   );
   app.post("/api/checkout", (req, res) => {
     const key = req.get("Idempotency-Key");
-    const payload = parseCheckout(req.body, products);
+    const validation = validateCheckout(req.body, products.map(product => product.id));
+    const payload = validation.ok ? validation.value : null;
     if (!key || !/^[a-zA-Z0-9_-]{8,100}$/.test(key) || !payload) {
       res.status(400).json({
         code: "INVALID_CHECKOUT",
+        issues: validation.ok ? [{ path: 'Idempotency-Key', message: 'Use a valid idempotency key.' }] : validation.issues,
         error:
           "Use a demo name, valid delivery option, and 1–10 of each item. A valid idempotency key is required.",
       });
