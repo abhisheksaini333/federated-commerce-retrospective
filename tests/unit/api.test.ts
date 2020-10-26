@@ -243,3 +243,12 @@ test("checkout validation returns actionable field paths", async () => {
  assert.deepEqual(result.body.issues.map((issue: {path:string})=>issue.path).sort(),['customerName','items.0.quantity']);
  assert.equal((await checkout(createApp(),'unknown-fields',{...body,unexpected:true})).body.issues[0].path,'unexpected');
 });
+
+
+test("demo names preserve normalized Unicode and reject embedded controls", async () => {
+ const app=createApp();
+ const good=await checkout(app,'unicode-name',{...body,customerName:'  Jose\u0301 Demo  '});
+ assert.equal(good.status,201); assert.equal(good.body.order.customerName,'José Demo');
+ const bad=await checkout(app,'control-name',{...body,customerName:'Alex\nAdmin'});
+ assert.equal(bad.status,400); assert.equal(bad.body.issues[0].path,'customerName');
+});

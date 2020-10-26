@@ -8,6 +8,7 @@ export function validateCheckout(value: unknown, productIds: readonly string[]):
  if(!record(value)) return {ok:false,issues:[{path:'$',message:'Expected an object.'}]};
  for(const key of Object.keys(value)) if(!['items','customerName','shipping'].includes(key)) issue(key,'Unknown field.');
  if(typeof value.customerName!=='string'||!value.customerName.trim()||value.customerName.length>60) issue('customerName','Enter a demo name of 1–60 characters.');
+ if(typeof value.customerName==='string'&&/[\u0000-\u001f\u007f-\u009f]/.test(value.customerName)) issue('customerName','Use a single-line demo name without control characters.');
  if(value.shipping!=='standard'&&value.shipping!=='express') issue('shipping','Choose standard or express delivery.');
  const items: CheckoutRequest['items']=[]; const seen=new Set<string>();
  if(!Array.isArray(value.items)||value.items.length<1||value.items.length>6) issue('items','Choose 1–6 unique product lines.');
@@ -22,5 +23,5 @@ export function validateCheckout(value: unknown, productIds: readonly string[]):
   items.push({productId:item.productId as string,quantity:item.quantity as number});
  });
  if(issues.length) return {ok:false,issues};
- return {ok:true,value:{items:items.sort((a,b)=>a.productId.localeCompare(b.productId)),customerName:(value.customerName as string).trim(),shipping:value.shipping as CheckoutRequest['shipping']}};
+ return {ok:true,value:{items:items.sort((a,b)=>a.productId.localeCompare(b.productId)),customerName:(value.customerName as string).trim().normalize('NFC'),shipping:value.shipping as CheckoutRequest['shipping']}};
 }
