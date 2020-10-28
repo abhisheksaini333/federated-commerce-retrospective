@@ -1,3 +1,4 @@
+import { validateCatalog } from '../../packages/contracts/catalog';
 import { validateCheckout } from '../../packages/contracts/validation';
 import express, { type ErrorRequestHandler } from "express";
 import { randomUUID } from "node:crypto";
@@ -18,6 +19,7 @@ const exactKeys = (value: Record<string, unknown>, keys: string[]) =>
 export interface AppOptions { products?: readonly Product[]; now?: () => Date; idFactory?: () => string }
 
 export function createApp(options: AppOptions = {}) {
+  validateCatalog(options.products ?? seedProducts);
   const app = express();
   const products = (options.products ?? seedProducts).map((product) => ({ ...product }));
   const now = options.now ?? (() => new Date());

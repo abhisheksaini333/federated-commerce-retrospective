@@ -219,7 +219,7 @@ test("mutation routes reject non-JSON bodies without creating orders", async () 
  const app=createApp();
  for (const mime of ['text/plain', 'application/x-www-form-urlencoded']) {
   const response=await request(app).post('/api/checkout').set('Content-Type',mime).set('Idempotency-Key','mime-contract').send(JSON.stringify(body));
-  assert.equal(response.status,415);
+  assert.equal(response.status,415,JSON.stringify({body:response.body,headers:response.headers,url:response.request.url}));
   assert.equal(response.body.code,'UNSUPPORTED_MEDIA_TYPE');
  }
  assert.equal((await request(app).get('/api/orders')).body.orders.length,0);
@@ -251,4 +251,11 @@ test("demo names preserve normalized Unicode and reject embedded controls", asyn
  assert.equal(good.status,201); assert.equal(good.body.order.customerName,'José Demo');
  const bad=await checkout(app,'control-name',{...body,customerName:'Alex\nAdmin'});
  assert.equal(bad.status,400); assert.equal(bad.body.issues[0].path,'customerName');
+});
+
+
+test("invalid catalog configuration fails before serving corrupt prices or inventory", () => {
+ const base={id:'fixture',name:'Fixture',category:'Tools' as const,description:'Demo',priceCents:100,stock:2,color:'#fff',artwork:'pencil' as const};
+ for(const invalid of [{...base,priceCents:-1},{...base,stock:1.5},{...base,id:'../escape'},{...base,color:'url(secret)'}]) assert.throws(()=>createApp({products:[invalid]}),/catalog/i);
+ assert.throws(()=>createApp({products:[base,base]}),/catalog/i);
 });
