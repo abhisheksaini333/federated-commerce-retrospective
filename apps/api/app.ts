@@ -23,7 +23,7 @@ export function createApp(options: AppOptions = {}) {
   const app = express();
   const products = (options.products ?? seedProducts).map((product) => ({ ...product }));
   const now = options.now ?? (() => new Date());
-  const idFactory = options.idFactory ?? (() => `FW-${randomUUID().slice(0, 8).toUpperCase()}`);
+  const idFactory = options.idFactory ?? (() => `FW-${randomUUID().toUpperCase()}`);
   const orders = new Map<string, Order>();
   const receipts = new Map<string, { fingerprint: string; order: Order }>();
   app.disable("x-powered-by");
@@ -89,8 +89,11 @@ export function createApp(options: AppOptions = {}) {
       0,
     );
     const delivery = shippingCents(payload.shipping, subtotalCents);
+    let id = idFactory();
+    for (let attempt = 0; orders.has(id) && attempt < 4; attempt++) id = idFactory();
+    if (!id || orders.has(id)) { res.status(503).json({code:'IDENTITY_UNAVAILABLE',error:'An order identifier could not be allocated. Try again.'}); return; }
     const order: Order = {
-      id: idFactory(),
+      id,
       customerName: payload.customerName,
       shipping: payload.shipping,
       items: lines.map(({ item, product }) => ({

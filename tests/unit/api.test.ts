@@ -259,3 +259,15 @@ test("invalid catalog configuration fails before serving corrupt prices or inven
  for(const invalid of [{...base,priceCents:-1},{...base,stock:1.5},{...base,id:'../escape'},{...base,color:'url(secret)'}]) assert.throws(()=>createApp({products:[invalid]}),/catalog/i);
  assert.throws(()=>createApp({products:[base,base]}),/catalog/i);
 });
+
+
+test("order identity uses full entropy and collisions cannot overwrite receipts", async () => {
+ const normal=await checkout(createApp());
+ assert.match(normal.body.order.id,/^FW-[A-F0-9-]{36}$/);
+ const app=createApp({idFactory:()=> 'collision-order'});
+ assert.equal((await checkout(app,'first-collision')).status,201);
+ const next=await checkout(app,'second-collision');
+ assert.equal(next.status,503); assert.equal(next.body.code,'IDENTITY_UNAVAILABLE');
+ assert.equal((await request(app).get('/api/orders')).body.orders.length,1);
+ assert.equal((await request(app).get('/api/products')).body.products[0].stock,10);
+});
