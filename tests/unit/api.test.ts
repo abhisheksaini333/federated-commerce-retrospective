@@ -271,3 +271,13 @@ test("order identity uses full entropy and collisions cannot overwrite receipts"
  assert.equal((await request(app).get('/api/orders')).body.orders.length,1);
  assert.equal((await request(app).get('/api/products')).body.products[0].stock,10);
 });
+
+
+test("idempotent receipts preserve their original response after fulfillment", async () => {
+ const app=createApp(); const first=await checkout(app,'snapshot-key');
+ await request(app).patch(`/api/orders/${first.body.order.id}`).send({status:'fulfilled'});
+ const replay=await checkout(app,'snapshot-key');
+ assert.equal(replay.status,200); assert.equal(replay.body.replayed,true);
+ assert.deepEqual(replay.body.order,first.body.order);
+ assert.equal((await request(app).get('/api/orders')).body.orders[0].status,'fulfilled');
+});

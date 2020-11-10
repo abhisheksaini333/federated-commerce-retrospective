@@ -109,7 +109,7 @@ export function createApp(options: AppOptions = {}) {
     };
     for (const { item, product } of lines) product.stock -= item.quantity;
     orders.set(order.id, order);
-    receipts.set(key, { fingerprint, order });
+    receipts.set(key, { fingerprint, order: structuredClone(order) });
     res.status(201).json({ order, replayed: false });
   });
   app.patch("/api/orders/:id", (req, res) => {
