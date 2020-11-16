@@ -16,9 +16,12 @@ export async function api<T>(
       signal: controller.signal,
       headers: { "Content-Type": "application/json", ...options.headers },
     });
-    const data = await response.json();
+    if (response.status === 204) return undefined as T;
+    if (!/^application\/(?:[a-z0-9.+-]+\+)?json(?:;|$)/i.test(response.headers.get('Content-Type') || '')) throw new ApiFailure('The shop service returned an unreadable response. Please try again.', response.status, 'INVALID_RESPONSE');
+    let data: any;
+    try { data = await response.json(); } catch { throw new ApiFailure('The shop service returned an unreadable response. Please try again.', response.status, 'INVALID_RESPONSE'); }
     if (!response.ok)
-      throw new ApiFailure((data as ApiError).error || 'The service could not complete that request. Please try again.', response.status, typeof data?.code === 'string' ? data.code : 'HTTP_ERROR', Array.isArray(data?.issues) ? data.issues : []);
+      throw new ApiFailure((typeof data?.error === 'string' ? data.error : '') || 'The service could not complete that request. Please try again.', response.status, typeof data?.code === 'string' ? data.code : 'HTTP_ERROR', Array.isArray(data?.issues) ? data.issues : []);
     return data as T;
   } catch (error) {
     if (
