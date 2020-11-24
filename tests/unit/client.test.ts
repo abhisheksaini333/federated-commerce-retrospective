@@ -18,3 +18,13 @@ test('non-JSON and malformed responses use safe protocol errors', async () => {
  globalThis.fetch=async()=>new Response(null,{status:204});
  assert.equal(await api<void>('/api/empty'),undefined);
 });
+
+
+test('caller cancellation and deadlines abort fetch without leaking cancellation state', async () => {
+ globalThis.fetch=async(_url,options)=>new Promise<Response>((_resolve,reject)=>{options?.signal?.addEventListener('abort',()=>reject(new DOMException('cancelled','AbortError')),{once:true});});
+ const controller=new AbortController();const pending=api('/api/products',{signal:controller.signal});controller.abort();
+ await assert.rejects(pending,(error:unknown)=>(error as {code:string}).code==='REQUEST_CANCELLED');
+ await assert.rejects(api('/api/products',{timeoutMs:5}),(error:unknown)=>(error as {code:string}).code==='REQUEST_TIMEOUT');
+ let called=false;globalThis.fetch=async()=>{called=true;return new Response('{}',{headers:{'Content-Type':'application/json'}});};
+ await assert.rejects(api('/api/products',{signal:controller.signal}));assert.equal(called,false);
+});

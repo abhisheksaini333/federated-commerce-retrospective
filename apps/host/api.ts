@@ -4,12 +4,19 @@ export class ApiFailure extends Error {
  constructor(message:string, public readonly status:number | null, public readonly code:string, public readonly issues: {path:string;message:string}[] = []) { super(message); this.name='ApiFailure'; }
 }
 
+export interface ApiOptions extends RequestInit { timeoutMs?: number }
 export async function api<T>(
   url: string,
-  options: RequestInit = {},
+  options: ApiOptions = {},
 ): Promise<T> {
   const controller = new AbortController();
-  const timeout = window.setTimeout(() => controller.abort(), 5000);
+  if (options.signal?.aborted) throw new ApiFailure('The request was cancelled.', null, 'REQUEST_CANCELLED');
+  const timeoutMs = options.timeoutMs ?? 5000;
+  if (!Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 60000) throw new ApiFailure('The request timeout is invalid.', null, 'INVALID_TIMEOUT');
+  let callerCancelled = false;
+  const cancel = () => { callerCancelled = true; controller.abort(); };
+  options.signal?.addEventListener('abort', cancel, { once: true });
+  const timeout = globalThis.setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetch(url, {
       ...options,
@@ -28,9 +35,10 @@ export async function api<T>(
       error instanceof TypeError ||
       (error instanceof DOMException && error.name === "AbortError")
     )
-      throw new ApiFailure("We could not reach the shop service. Your bag is saved; please try again.", null, error instanceof TypeError ? "NETWORK_ERROR" : "REQUEST_TIMEOUT");
+      throw new ApiFailure("We could not reach the shop service. Your bag is saved; please try again.", null, error instanceof TypeError ? "NETWORK_ERROR" : callerCancelled ? "REQUEST_CANCELLED" : "REQUEST_TIMEOUT");
     throw error;
   } finally {
-    window.clearTimeout(timeout);
+    globalThis.clearTimeout(timeout);
+    options.signal?.removeEventListener('abort', cancel);
   }
 }
