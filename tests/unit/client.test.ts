@@ -28,3 +28,12 @@ test('caller cancellation and deadlines abort fetch without leaking cancellation
  let called=false;globalThis.fetch=async()=>{called=true;return new Response('{}',{headers:{'Content-Type':'application/json'}});};
  await assert.rejects(api('/api/products',{signal:controller.signal}));assert.equal(called,false);
 });
+
+
+test('request headers honor Headers objects and tuples without forcing GET content types', async () => {
+ const observed:Headers[]=[];globalThis.fetch=async(_url,options)=>{observed.push(new Headers(options?.headers));return new Response('{}',{headers:{'Content-Type':'application/json'}});};
+ await api('/api/products',{headers:new Headers({'X-Request-Id':'request-one'})});
+ await api('/api/products',{headers:[['X-Request-Id','request-two']]});
+ await api('/api/custom',{method:'POST',body:'plain',headers:{'Content-Type':'text/plain'}});
+ assert.equal(observed[0].get('X-Request-Id'),'request-one');assert.equal(observed[1].get('X-Request-Id'),'request-two');assert.equal(observed[0].has('Content-Type'),false);assert.equal(observed[2].get('Content-Type'),'text/plain');
+});

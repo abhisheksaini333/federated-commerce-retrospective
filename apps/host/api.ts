@@ -18,10 +18,12 @@ export async function api<T>(
   options.signal?.addEventListener('abort', cancel, { once: true });
   const timeout = globalThis.setTimeout(() => controller.abort(), timeoutMs);
   try {
+    const headers = new Headers(options.headers);
+    if (options.body !== undefined && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
     const response = await fetch(url, {
       ...options,
       signal: controller.signal,
-      headers: { "Content-Type": "application/json", ...options.headers },
+      headers,
     });
     if (response.status === 204) return undefined as T;
     if (!/^application\/(?:[a-z0-9.+-]+\+)?json(?:;|$)/i.test(response.headers.get('Content-Type') || '')) throw new ApiFailure('The shop service returned an unreadable response. Please try again.', response.status, 'INVALID_RESPONSE');
