@@ -32,8 +32,18 @@ test('caller cancellation and deadlines abort fetch without leaking cancellation
 
 test('request headers honor Headers objects and tuples without forcing GET content types', async () => {
  const observed:Headers[]=[];globalThis.fetch=async(_url,options)=>{observed.push(new Headers(options?.headers));return new Response('{}',{headers:{'Content-Type':'application/json'}});};
- await api('/api/products',{headers:new Headers({'X-Request-Id':'request-one'})});
- await api('/api/products',{headers:[['X-Request-Id','request-two']]});
+ await api('/api/custom',{headers:new Headers({'X-Request-Id':'request-one'})});
+ await api('/api/custom',{headers:[['X-Request-Id','request-two']]});
  await api('/api/custom',{method:'POST',body:'plain',headers:{'Content-Type':'text/plain'}});
  assert.equal(observed[0].get('X-Request-Id'),'request-one');assert.equal(observed[1].get('X-Request-Id'),'request-two');assert.equal(observed[0].has('Content-Type'),false);assert.equal(observed[2].get('Content-Type'),'text/plain');
+});
+
+
+test('successful but invalid service payloads fail at the HTTP boundary', async () => {
+ for(const [url,payload] of [['/api/products',{products:'not-an-array'}],['/api/orders',{orders:[{id:'broken'}]}],['/api/checkout',{order:{totalCents:-1}}]] as const){
+  globalThis.fetch=async()=>new Response(JSON.stringify(payload),{headers:{'Content-Type':'application/json'}});
+  await assert.rejects(api(url),(error:unknown)=>(error as {code:string}).code==='INVALID_RESPONSE');
+ }
+ globalThis.fetch=async()=>new Response(JSON.stringify({products:[]}),{headers:{'Content-Type':'application/json'}});
+ assert.deepEqual(await api('/api/products'),{products:[]});
 });

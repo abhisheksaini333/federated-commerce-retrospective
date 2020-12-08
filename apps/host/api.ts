@@ -1,3 +1,4 @@
+import { validApiResponse } from '../../packages/contracts/responses';
 import type { ApiError } from "../../packages/contracts";
 
 export class ApiFailure extends Error {
@@ -31,6 +32,7 @@ export async function api<T>(
     try { data = await response.json(); } catch { throw new ApiFailure('The shop service returned an unreadable response. Please try again.', response.status, 'INVALID_RESPONSE'); }
     if (!response.ok)
       throw new ApiFailure((typeof data?.error === 'string' ? data.error : '') || 'The service could not complete that request. Please try again.', response.status, typeof data?.code === 'string' ? data.code : 'HTTP_ERROR', Array.isArray(data?.issues) ? data.issues : []);
+    if (!validApiResponse(url, data)) throw new ApiFailure('The shop service returned invalid data. Please try again.', response.status, 'INVALID_RESPONSE');
     return data as T;
   } catch (error) {
     if (
