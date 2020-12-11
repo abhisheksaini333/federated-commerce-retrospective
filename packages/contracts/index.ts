@@ -49,9 +49,16 @@ export interface CartProps {
   onQuantity: (id: string, quantity: number) => void;
   onCheckout: () => void;
 }
-export const shippingCents = (shipping: Shipping, subtotal: number) =>
-  shipping === "express" ? 1200 : subtotal >= 7500 ? 0 : 600;
-export const money = (cents: number) =>
-  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
-    cents / 100,
-  );
+export function assertCents(cents:number):void {
+ if(!Number.isSafeInteger(cents)||cents<0)throw new RangeError('Money must be non-negative safe integer cents.');
+}
+export function shippingCents(shipping:Shipping,subtotal:number):number {
+ assertCents(subtotal);
+ if(shipping!=='standard'&&shipping!=='express')throw new RangeError('Unknown delivery option.');
+ return shipping==='express'?1200:subtotal>=7500?0:600;
+}
+const currencyFormatter=new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'});
+export function money(cents:number):string {
+ assertCents(cents);
+ return currencyFormatter.formatToParts(BigInt(cents)/100n).map(part=>part.type==='fraction'?String(cents%100).padStart(2,'0'):part.value).join('');
+}
