@@ -112,6 +112,11 @@ export function createApp(options: AppOptions = {}) {
     receipts.set(key, { fingerprint, order: structuredClone(order) });
     res.status(201).json({ order, replayed: false });
   });
+  app.get('/api/orders/:id', (req,res) => {
+    const order=orders.get(req.params.id);
+    if(!order){res.status(404).json({code:'NOT_FOUND',error:'Order not found.'});return;}
+    res.json({order});
+  });
   app.patch("/api/orders/:id", (req, res) => {
     if (
       !object(req.body) ||
@@ -135,7 +140,7 @@ export function createApp(options: AppOptions = {}) {
   const allowedMethods: [RegExp, string][] = [
     [/^\/api\/(health|products|orders)$/, 'GET, HEAD'],
     [/^\/api\/checkout$/, 'POST'],
-    [/^\/api\/orders\/[^/]+$/, 'PATCH'],
+    [/^\/api\/orders\/[^/]+$/, 'GET, HEAD, PATCH'],
   ];
   app.use((req, res, next) => {
     const rule = allowedMethods.find(([pattern]) => pattern.test(req.path));

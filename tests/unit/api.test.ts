@@ -281,3 +281,11 @@ test("idempotent receipts preserve their original response after fulfillment", a
  assert.deepEqual(replay.body.order,first.body.order);
  assert.equal((await request(app).get('/api/orders')).body.orders[0].status,'fulfilled');
 });
+
+
+test("individual order lookup returns authoritative state and hides absent records", async () => {
+ const app=createApp();const placed=await checkout(app,'detail-key');
+ const detail=await request(app).get(`/api/orders/${placed.body.order.id}`);
+ assert.equal(detail.status,200);assert.deepEqual(detail.body.order,placed.body.order);
+ const absent=await request(app).get('/api/orders/unknown');assert.equal(absent.status,404);assert.equal(absent.body.code,'NOT_FOUND');
+});
