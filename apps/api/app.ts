@@ -46,6 +46,15 @@ export function createApp(options: AppOptions = {}) {
   app.get("/api/orders", (_req, res) =>
     res.json({ orders: [...orders.values()].reverse() }),
   );
+  app.post('/api/checkout/resolve',(req,res)=>{
+    const validation=validateCheckout(req.body,products.map(product=>product.id));
+    const key=req.get('Idempotency-Key');
+    if(!validation.ok||!key||!/^[a-zA-Z0-9_-]{8,100}$/.test(key)){res.status(400).json({code:'INVALID_CHECKOUT',error:'A valid checkout intent and key are required.'});return;}
+    const receipt=receipts.get(key);
+    if(!receipt){res.json({status:'unknown'});return;}
+    if(receipt.fingerprint!==JSON.stringify(validation.value)){res.status(409).json({code:'IDEMPOTENCY_CONFLICT',error:'This key belongs to a different checkout intent.'});return;}
+    res.json({status:'accepted',order:orders.get(receipt.order.id)??receipt.order});
+  });
   app.post("/api/checkout", (req, res) => {
     const key = req.get("Idempotency-Key");
     const validation = validateCheckout(req.body, products.map(product => product.id));
@@ -139,7 +148,7 @@ export function createApp(options: AppOptions = {}) {
   });
   const allowedMethods: [RegExp, string][] = [
     [/^\/api\/(health|products|orders)$/, 'GET, HEAD'],
-    [/^\/api\/checkout$/, 'POST'],
+    [/^\/api\/checkout(?:\/resolve)?$/, 'POST'],
     [/^\/api\/orders\/[^/]+$/, 'GET, HEAD, PATCH'],
   ];
   app.use((req, res, next) => {

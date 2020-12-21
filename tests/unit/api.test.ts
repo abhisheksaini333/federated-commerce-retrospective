@@ -289,3 +289,13 @@ test("individual order lookup returns authoritative state and hides absent recor
  assert.equal(detail.status,200);assert.deepEqual(detail.body.order,placed.body.order);
  const absent=await request(app).get('/api/orders/unknown');assert.equal(absent.status,404);assert.equal(absent.body.code,'NOT_FOUND');
 });
+
+
+test("checkout resolution verifies intent and never creates a missing receipt", async () => {
+ const app=createApp();const resolve=(payload:unknown=body)=>request(app).post('/api/checkout/resolve').set('Idempotency-Key','resolution-key').send(payload as object);
+ const unknown=await resolve();assert.equal(unknown.status,200);assert.equal(unknown.body.status,'unknown');
+ const placed=await checkout(app,'resolution-key');const accepted=await resolve();
+ assert.equal(accepted.body.status,'accepted');assert.equal(accepted.body.order.id,placed.body.order.id);
+ assert.equal((await resolve({...body,shipping:'express'})).status,409);
+ assert.equal((await request(app).get('/api/orders')).body.orders.length,1);
+});
