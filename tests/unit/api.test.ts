@@ -299,3 +299,12 @@ test("checkout resolution verifies intent and never creates a missing receipt", 
  assert.equal((await resolve({...body,shipping:'express'})).status,409);
  assert.equal((await request(app).get('/api/orders')).body.orders.length,1);
 });
+
+
+test("checkout quotes compute authoritative prices without consuming inventory", async () => {
+ const app=createApp();const response=await request(app).post('/api/checkout/quote').send({...body,shipping:'express'});
+ assert.equal(response.status,200);assert.equal(response.body.quote.subtotalCents,4800);assert.equal(response.body.quote.totalCents,6000);
+ assert.equal((await request(app).get('/api/products')).body.products[0].stock,12);
+ assert.equal((await request(app).get('/api/orders')).body.orders.length,0);
+ assert.equal((await request(app).post('/api/checkout/quote').send({...body,totalCents:1})).status,400);
+});

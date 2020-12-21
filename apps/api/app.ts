@@ -46,7 +46,17 @@ export function createApp(options: AppOptions = {}) {
   app.get("/api/orders", (_req, res) =>
     res.json({ orders: [...orders.values()].reverse() }),
   );
-  app.post('/api/checkout/resolve',(req,res)=>{
+  app.post('/api/checkout/quote',(req,res)=>{
+    const validation=validateCheckout(req.body,products.map(product=>product.id));
+    if(!validation.ok){res.status(400).json({code:'INVALID_CHECKOUT',error:'Review the highlighted checkout fields.',issues:validation.issues});return;}
+    const payload=validation.value;
+    const lines=payload.items.map(item=>({...item,product:products.find(product=>product.id===item.productId)!}));
+    if(lines.some(line=>line.quantity>line.product.stock)){res.status(409).json({code:'OUT_OF_STOCK',error:'Some requested items are no longer available.'});return;}
+    const subtotalCents=lines.reduce((sum,line)=>sum+line.quantity*line.product.priceCents,0);
+    const delivery=shippingCents(payload.shipping,subtotalCents);
+    res.json({quote:{items:lines.map(line=>({productId:line.productId,quantity:line.quantity,name:line.product.name,unitPriceCents:line.product.priceCents})),subtotalCents,shippingCents:delivery,totalCents:subtotalCents+delivery}});
+  });
+  app.post('/api/checkout/resolve' ,(req,res)=>{
     const validation=validateCheckout(req.body,products.map(product=>product.id));
     const key=req.get('Idempotency-Key');
     if(!validation.ok||!key||!/^[a-zA-Z0-9_-]{8,100}$/.test(key)){res.status(400).json({code:'INVALID_CHECKOUT',error:'A valid checkout intent and key are required.'});return;}
@@ -148,7 +158,7 @@ export function createApp(options: AppOptions = {}) {
   });
   const allowedMethods: [RegExp, string][] = [
     [/^\/api\/(health|products|orders)$/, 'GET, HEAD'],
-    [/^\/api\/checkout(?:\/resolve)?$/, 'POST'],
+    [/^\/api\/checkout(?:\/(?:resolve|quote))?$/, 'POST'],
     [/^\/api\/orders\/[^/]+$/, 'GET, HEAD, PATCH'],
   ];
   app.use((req, res, next) => {
