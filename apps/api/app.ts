@@ -24,6 +24,7 @@ export function createApp(options: AppOptions = {}) {
   const products = (options.products ?? seedProducts).map((product) => ({ ...product }));
   const now = options.now ?? (() => new Date());
   const idFactory = options.idFactory ?? (() => `FW-${randomUUID().toUpperCase()}`);
+  let inventoryRevision = 0;
   const orders = new Map<string, Order>();
   const receipts = new Map<string, { fingerprint: string; order: Order }>();
   app.disable("x-powered-by");
@@ -42,7 +43,7 @@ export function createApp(options: AppOptions = {}) {
   app.get("/api/health", (_req, res) =>
     res.json({ status: "ok", mode: "synthetic-local-demo" }),
   );
-  app.get("/api/products", (_req, res) => res.json({ products }));
+  app.get("/api/products", (_req, res) => res.set('ETag', `"inventory-${inventoryRevision}"`).json({ products, revision: inventoryRevision }));
   app.get("/api/orders", (_req, res) =>
     res.json({ orders: [...orders.values()].reverse() }),
   );
@@ -54,7 +55,7 @@ export function createApp(options: AppOptions = {}) {
     if(lines.some(line=>line.quantity>line.product.stock)){res.status(409).json({code:'OUT_OF_STOCK',error:'Some requested items are no longer available.'});return;}
     const subtotalCents=lines.reduce((sum,line)=>sum+line.quantity*line.product.priceCents,0);
     const delivery=shippingCents(payload.shipping,subtotalCents);
-    res.json({quote:{items:lines.map(line=>({productId:line.productId,quantity:line.quantity,name:line.product.name,unitPriceCents:line.product.priceCents})),subtotalCents,shippingCents:delivery,totalCents:subtotalCents+delivery}});
+    res.json({quote:{revision:inventoryRevision,items:lines.map(line=>({productId:line.productId,quantity:line.quantity,name:line.product.name,unitPriceCents:line.product.priceCents})),subtotalCents,shippingCents:delivery,totalCents:subtotalCents+delivery}});
   });
   app.post('/api/checkout/resolve' ,(req,res)=>{
     const validation=validateCheckout(req.body,products.map(product=>product.id));
@@ -127,6 +128,7 @@ export function createApp(options: AppOptions = {}) {
       status: "placed",
     };
     for (const { item, product } of lines) product.stock -= item.quantity;
+    inventoryRevision++;
     orders.set(order.id, order);
     receipts.set(key, { fingerprint, order: structuredClone(order) });
     res.status(201).json({ order, replayed: false });

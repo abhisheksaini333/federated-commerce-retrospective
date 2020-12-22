@@ -308,3 +308,13 @@ test("checkout quotes compute authoritative prices without consuming inventory",
  assert.equal((await request(app).get('/api/orders')).body.orders.length,0);
  assert.equal((await request(app).post('/api/checkout/quote').send({...body,totalCents:1})).status,400);
 });
+
+
+test("inventory revision advances only after accepted mutations", async () => {
+ const app=createApp();const before=await request(app).get('/api/products');
+ assert.equal(before.body.revision,0);assert.equal(before.headers.etag,'"inventory-0"');
+ await checkout(app,'revision-key');await checkout(app,'revision-key');
+ const after=await request(app).get('/api/products');assert.equal(after.body.revision,1);
+ const quote=await request(app).post('/api/checkout/quote').send(body);assert.equal(quote.body.quote.revision,1);
+ await checkout(app,'bad-revision',{...body,items:[]});assert.equal((await request(app).get('/api/products')).body.revision,1);
+});
