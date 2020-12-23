@@ -318,3 +318,13 @@ test("inventory revision advances only after accepted mutations", async () => {
  const quote=await request(app).post('/api/checkout/quote').send(body);assert.equal(quote.body.quote.revision,1);
  await checkout(app,'bad-revision',{...body,items:[]});assert.equal((await request(app).get('/api/products')).body.revision,1);
 });
+
+
+test("checkout preconditions reject stale quotes but allow accepted receipt replay", async () => {
+ const app=createApp();
+ const submit=(key:string)=>request(app).post('/api/checkout').set('Idempotency-Key',key).set('If-Match','"inventory-0"').send(body);
+ const first=await submit('quoted-order-one');assert.equal(first.status,201);
+ const stale=await submit('quoted-order-two');assert.equal(stale.status,412);assert.equal(stale.body.code,'PRECONDITION_FAILED');
+ assert.equal((await submit('quoted-order-one')).status,200);
+ assert.equal((await request(app).get('/api/products')).body.products[0].stock,10);
+});

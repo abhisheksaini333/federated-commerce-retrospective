@@ -91,6 +91,8 @@ export function createApp(options: AppOptions = {}) {
       else res.json({ order: receipt.order, replayed: true });
       return;
     }
+    const expectedRevision=req.get('If-Match');
+    if(expectedRevision&&expectedRevision!==`"inventory-${inventoryRevision}"`){res.set('ETag',`"inventory-${inventoryRevision}"`).status(412).json({code:'PRECONDITION_FAILED',error:'Stock changed after this quote. Refresh the quote before placing the order.'});return;}
     const lines = payload.items.map((item) => ({
       item,
       product: products.find((p) => p.id === item.productId)!,
