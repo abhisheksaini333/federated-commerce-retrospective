@@ -100,6 +100,7 @@ export function createApp(options: AppOptions = {}) {
     if (lines.some(({ item, product }) => product.stock < item.quantity)) {
       res.status(409).json({
         code: "OUT_OF_STOCK",
+        stockConflicts: lines.filter(({item,product})=>product.stock<item.quantity).map(({item,product})=>({productId:product.id,requested:item.quantity,available:product.stock})),
         error:
           "Stock changed. Refresh the catalog and adjust your bag before trying again.",
       });

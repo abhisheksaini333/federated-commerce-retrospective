@@ -328,3 +328,11 @@ test("checkout preconditions reject stale quotes but allow accepted receipt repl
  assert.equal((await submit('quoted-order-one')).status,200);
  assert.equal((await request(app).get('/api/products')).body.products[0].stock,10);
 });
+
+
+test("stock conflicts identify every unavailable product and current quantity", async () => {
+ const app=createApp();const response=await checkout(app,'stock-details',{...body,items:[{productId:'lamp',quantity:8},{productId:'tote',quantity:9}]});
+ assert.equal(response.status,409);
+ assert.deepEqual(response.body.stockConflicts,[{productId:'lamp',requested:8,available:4},{productId:'tote',requested:9,available:8}]);
+ assert.equal((await request(app).get('/api/orders')).body.orders.length,0);
+});
