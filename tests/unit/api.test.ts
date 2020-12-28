@@ -146,7 +146,7 @@ test("admin can fulfill an order, repeated fulfillment is harmless, invalid tran
   const result = await checkout(app);
   const url = `/api/orders/${result.body.order.id}`;
   assert.equal(
-    (await request(app).patch(url).send({ status: "cancelled" })).status,
+    (await request(app).patch(url).send({ status: "shipped" })).status,
     400,
   );
   assert.equal(
@@ -335,4 +335,17 @@ test("stock conflicts identify every unavailable product and current quantity", 
  assert.equal(response.status,409);
  assert.deepEqual(response.body.stockConflicts,[{productId:'lamp',requested:8,available:4},{productId:'tote',requested:9,available:8}]);
  assert.equal((await request(app).get('/api/orders')).body.orders.length,0);
+});
+
+
+test("cancellation restores stock once and cannot reverse fulfilled orders", async () => {
+ const app=createApp();const placed=await checkout(app,'cancel-once');const url=`/api/orders/${placed.body.order.id}`;
+ assert.equal((await request(app).patch(url).send({status:'cancelled'})).body.order.status,'cancelled');
+ assert.equal((await request(app).patch(url).send({status:'cancelled'})).status,200);
+ assert.equal((await request(app).get('/api/products')).body.products[0].stock,12);
+ assert.equal((await request(app).patch(url).send({status:'fulfilled'})).status,409);
+ const second=await checkout(app,'fulfilled-no-cancel');const secondUrl=`/api/orders/${second.body.order.id}`;
+ await request(app).patch(secondUrl).send({status:'fulfilled'});
+ assert.equal((await request(app).patch(secondUrl).send({status:'cancelled'})).status,409);
+ assert.equal((await request(app).get('/api/products')).body.products[0].stock,10);
 });

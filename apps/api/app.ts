@@ -145,11 +145,11 @@ export function createApp(options: AppOptions = {}) {
     if (
       !object(req.body) ||
       !exactKeys(req.body, ["status"]) ||
-      req.body.status !== "fulfilled"
+      !["fulfilled", "cancelled"].includes(req.body.status as string)
     ) {
       res.status(400).json({
         code: "INVALID_STATUS",
-        error: "Only fulfillment is supported by this demo.",
+        error: "Choose fulfillment or cancellation.",
       });
       return;
     }
@@ -158,7 +158,13 @@ export function createApp(options: AppOptions = {}) {
       res.status(404).json({ code: "NOT_FOUND", error: "Order not found." });
       return;
     }
-    order.status = "fulfilled";
+    const nextStatus=req.body.status as 'fulfilled'|'cancelled';
+    if(order.status!==nextStatus&&order.status!=='placed'){res.status(409).json({code:'INVALID_TRANSITION',error:'Completed orders cannot change to another terminal status.'});return;}
+    if(nextStatus==='cancelled'&&order.status==='placed'){
+      for(const line of order.items) products.find(product=>product.id===line.productId)!.stock+=line.quantity;
+      inventoryRevision++;
+    }
+    order.status = nextStatus;
     res.json({ order });
   });
   const allowedMethods: [RegExp, string][] = [

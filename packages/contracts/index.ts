@@ -33,7 +33,7 @@ export interface Order {
   shippingCents: number;
   totalCents: number;
   createdAt: string;
-  status: "placed" | "fulfilled";
+  status: "placed" | "fulfilled" | "cancelled";
 }
 export interface ApiError {
   error: string;
