@@ -136,7 +136,14 @@ export function createApp(options: AppOptions = {}) {
     receipts.set(key, { fingerprint, order: structuredClone(order) });
     res.status(201).json({ order, replayed: false });
   });
-  app.get('/api/orders/:id', (req,res) => {
+  app.patch('/api/inventory/:id',(req,res)=>{
+    const product=products.find(value=>value.id===req.params.id);
+    if(!product){res.status(404).json({code:'NOT_FOUND',error:'Product not found.'});return;}
+    if(!object(req.body)||!exactKeys(req.body,['delta','reason'])||!Number.isInteger(req.body.delta)||req.body.delta===0||Math.abs(req.body.delta as number)>1000||typeof req.body.reason!=='string'||!req.body.reason.trim()||req.body.reason.length>140||product.stock+(req.body.delta as number)<0||!Number.isSafeInteger(product.stock+(req.body.delta as number))){res.status(400).json({code:'INVALID_ADJUSTMENT',error:'Use a nonzero whole adjustment up to 1000 units and a short reason without making stock negative.'});return;}
+    product.stock+=req.body.delta as number;inventoryRevision++;
+    res.json({product,revision:inventoryRevision});
+  });
+  app.get('/api/orders/:id' , (req,res) => {
     const order=orders.get(req.params.id);
     if(!order){res.status(404).json({code:'NOT_FOUND',error:'Order not found.'});return;}
     res.json({order});
@@ -168,6 +175,7 @@ export function createApp(options: AppOptions = {}) {
     res.json({ order });
   });
   const allowedMethods: [RegExp, string][] = [
+    [/^\/api\/inventory\/[^/]+$/, 'PATCH'],
     [/^\/api\/(health|products|orders)$/, 'GET, HEAD'],
     [/^\/api\/checkout(?:\/(?:resolve|quote))?$/, 'POST'],
     [/^\/api\/orders\/[^/]+$/, 'GET, HEAD, PATCH'],

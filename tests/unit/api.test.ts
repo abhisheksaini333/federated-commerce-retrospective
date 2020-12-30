@@ -349,3 +349,14 @@ test("cancellation restores stock once and cannot reverse fulfilled orders", asy
  assert.equal((await request(app).patch(secondUrl).send({status:'cancelled'})).status,409);
  assert.equal((await request(app).get('/api/products')).body.products[0].stock,10);
 });
+
+
+test("inventory adjustments apply bounded deltas atomically with a reason", async () => {
+ const app=createApp();const adjust=(delta:number,reason='Count correction')=>request(app).patch('/api/inventory/notebook').send({delta,reason});
+ assert.equal((await adjust(-2)).body.product.stock,10);
+ const results=await Promise.all([adjust(3),adjust(2)]);assert.deepEqual(results.map(r=>r.status),[200,200]);
+ assert.equal((await request(app).get('/api/products')).body.products[0].stock,15);
+ for(const delta of [-16,0,0.5,1001])assert.equal((await adjust(delta)).status,400);
+ assert.equal((await adjust(1,'')).status,400);
+ assert.equal((await request(app).get('/api/products')).body.products[0].stock,15);
+});
