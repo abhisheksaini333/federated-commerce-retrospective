@@ -44,9 +44,16 @@ export function createApp(options: AppOptions = {}) {
     res.json({ status: "ok", mode: "synthetic-local-demo" }),
   );
   app.get("/api/products", (_req, res) => res.set('ETag', `"inventory-${inventoryRevision}"`).json({ products, revision: inventoryRevision }));
-  app.get("/api/orders", (_req, res) =>
-    res.json({ orders: [...orders.values()].reverse() }),
-  );
+  app.get('/api/orders',(req,res)=>{
+    const rawLimit=req.query.limit;const after=req.query.after;
+    const limit=rawLimit===undefined?25:typeof rawLimit==='string'&&/^[1-9][0-9]*$/.test(rawLimit)?Number(rawLimit):NaN;
+    if(!Number.isInteger(limit)||limit>100||(after!==undefined&&(typeof after!=='string'||!after))){res.status(400).json({code:'INVALID_QUERY',error:'Use a limit from 1 to 100 and a valid cursor.'});return;}
+    const matches=[...orders.values()].reverse();
+    const offset=after===undefined?0:matches.findIndex(order=>order.id===after)+1;
+    if(after!==undefined&&offset===0){res.status(400).json({code:'INVALID_CURSOR',error:'That order cursor is no longer available.'});return;}
+    const page=matches.slice(offset,offset+limit);
+    res.json({orders:page,total:matches.length,nextCursor:offset+page.length<matches.length?page[page.length-1]?.id??null:null});
+  });
   app.post('/api/checkout/quote',(req,res)=>{
     const validation=validateCheckout(req.body,products.map(product=>product.id));
     if(!validation.ok){res.status(400).json({code:'INVALID_CHECKOUT',error:'Review the highlighted checkout fields.',issues:validation.issues});return;}

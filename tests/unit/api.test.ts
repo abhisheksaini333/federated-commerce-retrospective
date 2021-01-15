@@ -360,3 +360,12 @@ test("inventory adjustments apply bounded deltas atomically with a reason", asyn
  assert.equal((await adjust(1,'')).status,400);
  assert.equal((await request(app).get('/api/products')).body.products[0].stock,15);
 });
+
+
+test("order pagination uses stable cursors and bounded validated limits", async () => {
+ const app=createApp();for(let i=0;i<3;i++)await checkout(app,`page-key-${i}`);
+ const first=await request(app).get('/api/orders?limit=2');assert.equal(first.body.orders.length,2);assert.equal(first.body.total,3);assert.ok(first.body.nextCursor);
+ const second=await request(app).get(`/api/orders?limit=2&after=${first.body.nextCursor}`);assert.equal(second.body.orders.length,1);assert.equal(second.body.nextCursor,null);
+ assert.equal(new Set([...first.body.orders,...second.body.orders].map(order=>order.id)).size,3);
+ assert.equal((await request(app).get('/api/orders?limit=101')).status,400);assert.equal((await request(app).get('/api/orders?after=missing')).status,400);
+});
