@@ -48,7 +48,10 @@ export function createApp(options: AppOptions = {}) {
     const rawLimit=req.query.limit;const after=req.query.after;
     const limit=rawLimit===undefined?25:typeof rawLimit==='string'&&/^[1-9][0-9]*$/.test(rawLimit)?Number(rawLimit):NaN;
     if(!Number.isInteger(limit)||limit>100||(after!==undefined&&(typeof after!=='string'||!after))){res.status(400).json({code:'INVALID_QUERY',error:'Use a limit from 1 to 100 and a valid cursor.'});return;}
-    const matches=[...orders.values()].reverse();
+    const status=req.query.status;const query=req.query.q;
+    if((status!==undefined&&(typeof status!=='string'||!['placed','fulfilled','cancelled'].includes(status)))||(query!==undefined&&(typeof query!=='string'||query.length>60))){res.status(400).json({code:'INVALID_QUERY',error:'Use a known order status and a short customer search.'});return;}
+    const normalized=typeof query==='string'?query.trim().normalize('NFC').toLocaleLowerCase('en-US'):'';
+    const matches=[...orders.values()].reverse().filter(order=>(status===undefined||order.status===status)&&order.customerName.toLocaleLowerCase('en-US').includes(normalized));
     const offset=after===undefined?0:matches.findIndex(order=>order.id===after)+1;
     if(after!==undefined&&offset===0){res.status(400).json({code:'INVALID_CURSOR',error:'That order cursor is no longer available.'});return;}
     const page=matches.slice(offset,offset+limit);

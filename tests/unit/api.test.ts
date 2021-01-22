@@ -369,3 +369,11 @@ test("order pagination uses stable cursors and bounded validated limits", async 
  assert.equal(new Set([...first.body.orders,...second.body.orders].map(order=>order.id)).size,3);
  assert.equal((await request(app).get('/api/orders?limit=101')).status,400);assert.equal((await request(app).get('/api/orders?after=missing')).status,400);
 });
+
+
+test("order filters combine status and normalized demo customer search", async () => {
+ const app=createApp();const first=await checkout(app,'filter-one',{...body,customerName:'Morgan Demo'});await checkout(app,'filter-two',{...body,customerName:'Alex Demo'});
+ await request(app).patch(`/api/orders/${first.body.order.id}`).send({status:'fulfilled'});
+ const result=await request(app).get('/api/orders?status=fulfilled&q=%20MORGAN%20');assert.equal(result.body.total,1);assert.equal(result.body.orders[0].id,first.body.order.id);
+ assert.equal((await request(app).get('/api/orders?status=unknown')).status,400);assert.equal((await request(app).get('/api/orders?q[x]=bad')).status,400);
+});
