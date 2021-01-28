@@ -44,6 +44,10 @@ export function createApp(options: AppOptions = {}) {
     res.json({ status: "ok", mode: "synthetic-local-demo" }),
   );
   app.get("/api/products", (_req, res) => res.set('ETag', `"inventory-${inventoryRevision}"`).json({ products, revision: inventoryRevision }));
+  app.get('/api/stats',(_req,res)=>{
+    const values=[...orders.values()];
+    res.json({orders:values.length,byStatus:{placed:values.filter(order=>order.status==='placed').length,fulfilled:values.filter(order=>order.status==='fulfilled').length,cancelled:values.filter(order=>order.status==='cancelled').length},activeTotalCents:values.filter(order=>order.status!=='cancelled').reduce((sum,order)=>sum+order.totalCents,0),stockUnits:products.reduce((sum,product)=>sum+product.stock,0),revision:inventoryRevision});
+  });
   app.get('/api/orders',(req,res)=>{
     const rawLimit=req.query.limit;const after=req.query.after;
     const limit=rawLimit===undefined?25:typeof rawLimit==='string'&&/^[1-9][0-9]*$/.test(rawLimit)?Number(rawLimit):NaN;
@@ -186,7 +190,7 @@ export function createApp(options: AppOptions = {}) {
   });
   const allowedMethods: [RegExp, string][] = [
     [/^\/api\/inventory\/[^/]+$/, 'PATCH'],
-    [/^\/api\/(health|products|orders)$/, 'GET, HEAD'],
+    [/^\/api\/(health|products|orders|stats)$/, 'GET, HEAD'],
     [/^\/api\/checkout(?:\/(?:resolve|quote))?$/, 'POST'],
     [/^\/api\/orders\/[^/]+$/, 'GET, HEAD, PATCH'],
   ];

@@ -377,3 +377,10 @@ test("order filters combine status and normalized demo customer search", async (
  const result=await request(app).get('/api/orders?status=fulfilled&q=%20MORGAN%20');assert.equal(result.body.total,1);assert.equal(result.body.orders[0].id,first.body.order.id);
  assert.equal((await request(app).get('/api/orders?status=unknown')).status,400);assert.equal((await request(app).get('/api/orders?q[x]=bad')).status,400);
 });
+
+
+test("store statistics remain global and distinguish cancelled value", async () => {
+ const app=createApp();const cancelled=await checkout(app,'stats-cancel');await checkout(app,'stats-active');await request(app).patch(`/api/orders/${cancelled.body.order.id}`).send({status:'cancelled'});
+ const stats=await request(app).get('/api/stats');assert.equal(stats.status,200);assert.equal(stats.body.orders,2);assert.deepEqual(stats.body.byStatus,{placed:1,fulfilled:0,cancelled:1});assert.equal(stats.body.activeTotalCents,5400);assert.equal(stats.body.stockUnits,65);
+ await request(app).get('/api/orders?limit=1&status=placed');assert.equal((await request(app).get('/api/stats')).body.orders,2);
+});
