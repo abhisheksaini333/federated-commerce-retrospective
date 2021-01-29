@@ -384,3 +384,20 @@ test("store statistics remain global and distinguish cancelled value", async () 
  const stats=await request(app).get('/api/stats');assert.equal(stats.status,200);assert.equal(stats.body.orders,2);assert.deepEqual(stats.body.byStatus,{placed:1,fulfilled:0,cancelled:1});assert.equal(stats.body.activeTotalCents,5400);assert.equal(stats.body.stockUnits,65);
  await request(app).get('/api/orders?limit=1&status=placed');assert.equal((await request(app).get('/api/stats')).body.orders,2);
 });
+
+
+test("inventory stocktakes require a matching revision and reject stale concurrent counts", async () => {
+ const app=createApp();const count=(stock:number,tag?:string)=>{const req=request(app).patch('/api/inventory/notebook/count').send({stock,reason:'Physical demo count'});return tag?req.set('If-Match',tag):req;};
+ assert.equal((await count(20)).status,428);
+ const results=await Promise.all([count(20,'"inventory-0"'),count(30,'"inventory-0"')]);assert.deepEqual(results.map(result=>result.status).sort(),[200,412]);
+ assert.equal((await request(app).get('/api/products')).body.products[0].stock,20);
+ assert.equal((await count(-1,'"inventory-1"')).status,400);
+});
+
+
+test("bounded store capacity preserves inventory and existing replay receipts", async () => {
+ const app=createApp({maxOrders:1});const first=await checkout(app,'capacity-first');assert.equal(first.status,201);
+ const second=await checkout(app,'capacity-second');assert.equal(second.status,503);assert.equal(second.body.code,'STORE_CAPACITY');
+ assert.equal((await checkout(app,'capacity-first')).status,200);assert.equal((await request(app).get('/api/products')).body.products[0].stock,10);
+ assert.throws(()=>createApp({maxOrders:0}),RangeError);
+});
