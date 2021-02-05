@@ -25,6 +25,7 @@ export interface OrderLine extends CartItem {
   unitPriceCents: number;
 }
 export interface Order {
+  version: number;
   id: string;
   items: OrderLine[];
   customerName: string;

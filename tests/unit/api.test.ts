@@ -401,3 +401,12 @@ test("bounded store capacity preserves inventory and existing replay receipts", 
  assert.equal((await checkout(app,'capacity-first')).status,200);assert.equal((await request(app).get('/api/products')).body.products[0].stock,10);
  assert.throws(()=>createApp({maxOrders:0}),RangeError);
 });
+
+
+test("order version preconditions reject stale changes and allow equivalent repeats", async () => {
+ const app=createApp();const first=await checkout(app,'version-order');assert.equal(first.body.order.version,1);const url=`/api/orders/${first.body.order.id}`;
+ assert.equal((await request(app).get(url)).headers.etag,'"order-1"');
+ assert.equal((await request(app).patch(url).set('If-Match','"order-0"').send({status:'fulfilled'})).status,412);
+ const fulfilled=await request(app).patch(url).set('If-Match','"order-1"').send({status:'fulfilled'});assert.equal(fulfilled.body.order.version,2);
+ const replay=await request(app).patch(url).set('If-Match','"order-1"').send({status:'fulfilled'});assert.equal(replay.status,200);assert.equal(replay.body.order.version,2);
+});

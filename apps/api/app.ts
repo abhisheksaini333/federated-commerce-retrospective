@@ -133,6 +133,7 @@ export function createApp(options: AppOptions = {}) {
     for (let attempt = 0; orders.has(id) && attempt < 4; attempt++) id = idFactory();
     if (!id || orders.has(id)) { res.status(503).json({code:'IDENTITY_UNAVAILABLE',error:'An order identifier could not be allocated. Try again.'}); return; }
     const order: Order = {
+      version: 1,
       id,
       customerName: payload.customerName,
       shipping: payload.shipping,
@@ -173,7 +174,7 @@ export function createApp(options: AppOptions = {}) {
   app.get('/api/orders/:id' , (req,res) => {
     const order=orders.get(req.params.id);
     if(!order){res.status(404).json({code:'NOT_FOUND',error:'Order not found.'});return;}
-    res.json({order});
+    res.set('ETag', `"order-${order.version}"`).json({order});
   });
   app.patch("/api/orders/:id", (req, res) => {
     if (
@@ -193,11 +194,14 @@ export function createApp(options: AppOptions = {}) {
       return;
     }
     const nextStatus=req.body.status as 'fulfilled'|'cancelled';
+    const expected=req.get('If-Match');
+    if(order.status!==nextStatus&&expected&&expected!==`"order-${order.version}"`){res.status(412).json({code:'PRECONDITION_FAILED',error:'This order changed. Refresh before updating it.'});return;}
     if(order.status!==nextStatus&&order.status!=='placed'){res.status(409).json({code:'INVALID_TRANSITION',error:'Completed orders cannot change to another terminal status.'});return;}
     if(nextStatus==='cancelled'&&order.status==='placed'){
       for(const line of order.items) products.find(product=>product.id===line.productId)!.stock+=line.quantity;
       inventoryRevision++;
     }
+    if(order.status!==nextStatus)order.version++;
     order.status = nextStatus;
     res.json({ order });
   });
