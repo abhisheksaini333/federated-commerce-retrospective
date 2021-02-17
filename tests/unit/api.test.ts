@@ -410,3 +410,15 @@ test("order version preconditions reject stale changes and allow equivalent repe
  const fulfilled=await request(app).patch(url).set('If-Match','"order-1"').send({status:'fulfilled'});assert.equal(fulfilled.body.order.version,2);
  const replay=await request(app).patch(url).set('If-Match','"order-1"').send({status:'fulfilled'});assert.equal(replay.status,200);assert.equal(replay.body.order.version,2);
 });
+
+
+test("audit trail records accepted operations once and bounds retention", async () => {
+ const app=createApp({maxAuditEvents:3});const first=await checkout(app,'audit-trail');const url=`/api/orders/${first.body.order.id}`;
+ await checkout(app,'audit-trail');await request(app).patch(url).send({status:'fulfilled'});await request(app).patch(url).send({status:'fulfilled'});
+ await request(app).patch('/api/inventory/notebook').send({delta:2,reason:'Recount'});
+ const events=(await request(app).get('/api/audit')).body.events;
+ assert.deepEqual(events.map((event:{type:string})=>event.type),['stock_adjusted','order_fulfilled','order_placed']);
+ assert.equal(JSON.stringify(events).includes('Alex Demo'),false);assert.equal(JSON.stringify(events).includes('audit-trail'),false);
+ await request(app).patch('/api/inventory/notebook/count').set('If-Match','"inventory-2"').send({stock:8,reason:'Count'});
+ assert.equal((await request(app).get('/api/audit')).body.events.length,3);
+});

@@ -16,7 +16,7 @@ const exactKeys = (value: Record<string, unknown>, keys: string[]) =>
   Object.keys(value).every((key) => keys.includes(key));
 
 /** One isolated in-memory store per app; synchronous mutation is atomic in one Node process. */
-export interface AppOptions { maxOrders?: number; products?: readonly Product[]; now?: () => Date; idFactory?: () => string }
+export interface AppOptions { maxAuditEvents?: number; maxOrders?: number; products?: readonly Product[]; now?: () => Date; idFactory?: () => string }
 
 export function createApp(options: AppOptions = {}) {
   const maxOrders=options.maxOrders??10000;
@@ -27,6 +27,11 @@ export function createApp(options: AppOptions = {}) {
   const now = options.now ?? (() => new Date());
   const idFactory = options.idFactory ?? (() => `FW-${randomUUID().toUpperCase()}`);
   let inventoryRevision = 0;
+  const auditLimit=options.maxAuditEvents??1000;
+  if(!Number.isInteger(auditLimit)||auditLimit<1||auditLimit>10000)throw new RangeError('Invalid audit retention limit.');
+  const events: {sequence:number;type:string;subjectId:string;at:string;details:Record<string,unknown>}[]=[];
+  let eventSequence=0;
+  const audit=(type:string,subjectId:string,details:Record<string,unknown>={})=>{events.push({sequence:++eventSequence,type,subjectId,at:now().toISOString(),details:structuredClone(details)});if(events.length>auditLimit)events.splice(0,events.length-auditLimit);};
   const orders = new Map<string, Order>();
   const receipts = new Map<string, { fingerprint: string; order: Order }>();
   app.disable("x-powered-by");
@@ -46,6 +51,7 @@ export function createApp(options: AppOptions = {}) {
     res.json({ status: "ok", mode: "synthetic-local-demo" }),
   );
   app.get("/api/products", (_req, res) => res.set('ETag', `"inventory-${inventoryRevision}"`).json({ products, revision: inventoryRevision }));
+  app.get('/api/audit',(_req,res)=>res.json({events:[...events].reverse()}));
   app.get('/api/stats',(_req,res)=>{
     const values=[...orders.values()];
     res.json({orders:values.length,byStatus:{placed:values.filter(order=>order.status==='placed').length,fulfilled:values.filter(order=>order.status==='fulfilled').length,cancelled:values.filter(order=>order.status==='cancelled').length},activeTotalCents:values.filter(order=>order.status!=='cancelled').reduce((sum,order)=>sum+order.totalCents,0),stockUnits:products.reduce((sum,product)=>sum+product.stock,0),revision:inventoryRevision});
@@ -152,6 +158,7 @@ export function createApp(options: AppOptions = {}) {
     inventoryRevision++;
     orders.set(order.id, order);
     receipts.set(key, { fingerprint, order: structuredClone(order) });
+    audit('order_placed',order.id,{totalCents:order.totalCents});
     res.status(201).json({ order, replayed: false });
   });
   app.patch('/api/inventory/:id/count',(req,res)=>{
@@ -161,7 +168,8 @@ export function createApp(options: AppOptions = {}) {
     if(!expected){res.status(428).json({code:'PRECONDITION_REQUIRED',error:'Read the current inventory before setting a count.'});return;}
     if(expected!==`"inventory-${inventoryRevision}"`){res.status(412).json({code:'PRECONDITION_FAILED',error:'Inventory changed. Refresh before applying this count.'});return;}
     if(!object(req.body)||!exactKeys(req.body,['stock','reason'])||!Number.isSafeInteger(req.body.stock)||(req.body.stock as number)<0||typeof req.body.reason!=='string'||!req.body.reason.trim()||req.body.reason.length>140){res.status(400).json({code:'INVALID_ADJUSTMENT',error:'Use a non-negative whole stock count and a short reason.'});return;}
-    product.stock=req.body.stock as number;inventoryRevision++;
+    const priorStock=product.stock;product.stock=req.body.stock as number;inventoryRevision++;
+    audit('inventory_counted',product.id,{from:priorStock,to:product.stock});
     res.json({product,revision:inventoryRevision});
   });
   app.patch('/api/inventory/:id',(req,res)=>{
@@ -169,6 +177,7 @@ export function createApp(options: AppOptions = {}) {
     if(!product){res.status(404).json({code:'NOT_FOUND',error:'Product not found.'});return;}
     if(!object(req.body)||!exactKeys(req.body,['delta','reason'])||!Number.isInteger(req.body.delta)||req.body.delta===0||Math.abs(req.body.delta as number)>1000||typeof req.body.reason!=='string'||!req.body.reason.trim()||req.body.reason.length>140||product.stock+(req.body.delta as number)<0||!Number.isSafeInteger(product.stock+(req.body.delta as number))){res.status(400).json({code:'INVALID_ADJUSTMENT',error:'Use a nonzero whole adjustment up to 1000 units and a short reason without making stock negative.'});return;}
     product.stock+=req.body.delta as number;inventoryRevision++;
+    audit('stock_adjusted',product.id,{delta:req.body.delta,stock:product.stock});
     res.json({product,revision:inventoryRevision});
   });
   app.get('/api/orders/:id' , (req,res) => {
@@ -201,13 +210,13 @@ export function createApp(options: AppOptions = {}) {
       for(const line of order.items) products.find(product=>product.id===line.productId)!.stock+=line.quantity;
       inventoryRevision++;
     }
-    if(order.status!==nextStatus)order.version++;
+    if(order.status!==nextStatus){order.version++;audit(nextStatus==='cancelled'?'order_cancelled':'order_fulfilled',order.id,{version:order.version});}
     order.status = nextStatus;
     res.json({ order });
   });
   const allowedMethods: [RegExp, string][] = [
     [/^\/api\/inventory\/[^/]+(?:\/count)?$/, 'PATCH'],
-    [/^\/api\/(health|products|orders|stats)$/, 'GET, HEAD'],
+    [/^\/api\/(health|products|orders|stats|audit)$/, 'GET, HEAD'],
     [/^\/api\/checkout(?:\/(?:resolve|quote))?$/, 'POST'],
     [/^\/api\/orders\/[^/]+$/, 'GET, HEAD, PATCH'],
   ];
