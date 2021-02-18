@@ -180,7 +180,12 @@ export function createApp(options: AppOptions = {}) {
     audit('stock_adjusted',product.id,{delta:req.body.delta,stock:product.stock});
     res.json({product,revision:inventoryRevision});
   });
-  app.get('/api/orders/:id' , (req,res) => {
+  app.get('/api/orders/export.csv',(_req,res)=>{
+    const cell=(value:unknown)=>{let text=String(value);if(/^[=+\-@]/.test(text.trimStart()))text="'"+text;return '"'+text.replace(/"/g,'""')+'"';};
+    const rows=[['Order','Demo customer','Status','Total cents','Created at'],...[...orders.values()].map(order=>[order.id,order.customerName,order.status,order.totalCents,order.createdAt])];
+    res.type('text/csv').set('Content-Disposition','attachment; filename="fieldwork-orders.csv"').send(rows.map(row=>row.map(cell).join(',')).join('\r\n')+'\r\n');
+  });
+  app.get('/api/orders/:id'  , (req,res) => {
     const order=orders.get(req.params.id);
     if(!order){res.status(404).json({code:'NOT_FOUND',error:'Order not found.'});return;}
     res.set('ETag', `"order-${order.version}"`).json({order});

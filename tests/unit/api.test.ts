@@ -422,3 +422,10 @@ test("audit trail records accepted operations once and bounds retention", async 
  await request(app).patch('/api/inventory/notebook/count').set('If-Match','"inventory-2"').send({stock:8,reason:'Count'});
  assert.equal((await request(app).get('/api/audit')).body.events.length,3);
 });
+
+
+test("CSV export quotes values and neutralizes spreadsheet formulas", async () => {
+ const app=createApp();await checkout(app,'csv-formula',{...body,customerName:'=1+1'});await checkout(app,'csv-quotes',{...body,customerName:'A, "B"'});
+ const csv=await request(app).get('/api/orders/export.csv');assert.equal(csv.status,200);assert.match(csv.headers['content-type'],/text\/csv/);assert.match(csv.headers['content-disposition'],/attachment/);
+ assert.ok(csv.text.includes('"\'=1+1"'));assert.ok(csv.text.includes('"A, ""B"""'));assert.equal(csv.text.split('\r\n').filter(Boolean).length,3);
+});
