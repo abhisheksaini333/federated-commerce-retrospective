@@ -1,8 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import supertest from 'supertest';
-// Each assertion starts a short-lived server; do not retain sockets beyond it.
-const request = (app: Parameters<typeof supertest>[0]) => supertest.agent(app).set('Connection', 'close');
+import { request } from '../support/http';
 import { createApp } from "../../apps/api/app";
 
 const body = {
@@ -428,4 +426,12 @@ test("CSV export quotes values and neutralizes spreadsheet formulas", async () =
  const app=createApp();await checkout(app,'csv-formula',{...body,customerName:'=1+1'});await checkout(app,'csv-quotes',{...body,customerName:'A, "B"'});
  const csv=await request(app).get('/api/orders/export.csv');assert.equal(csv.status,200);assert.match(csv.headers['content-type'],/text\/csv/);assert.match(csv.headers['content-disposition'],/attachment/);
  assert.ok(csv.text.includes('"\'=1+1"'));assert.ok(csv.text.includes('"A, ""B"""'));assert.equal(csv.text.split('\r\n').filter(Boolean).length,3);
+});
+
+
+test("HTTP fixtures isolate application state behind one bounded listener", async () => {
+ const first=createApp();const second=createApp();await checkout(first,'fixture-isolation');
+ const firstResult=await request(first).get('/api/orders');const secondResult=await request(second).get('/api/orders');
+ assert.equal(firstResult.body.total,1);assert.equal(secondResult.body.total,0);
+ assert.equal(new URL(firstResult.request.url).origin,new URL(secondResult.request.url).origin);
 });
