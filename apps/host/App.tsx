@@ -1,3 +1,4 @@
+import {normalizeCart,serializeCart} from '../../packages/cart';
 import React, { Suspense, lazy, useEffect, useState } from "react";
 import {
   type CartItem,
@@ -40,22 +41,7 @@ const storage = {
   },
 };
 function readCart(): CartItem[] {
-  try {
-    const value = JSON.parse(storage.get("bag") || "[]");
-    return Array.isArray(value)
-      ? value
-          .filter(
-            (item) =>
-              typeof item?.productId === "string" &&
-              Number.isInteger(item?.quantity) &&
-              item.quantity >= 1 &&
-              item.quantity <= 10,
-          )
-          .slice(0, 6)
-      : [];
-  } catch {
-    return [];
-  }
+ try { const raw=storage.get('bag')||'[]';return raw.length<=64000?normalizeCart(JSON.parse(raw)):[]; } catch { return []; }
 }
 function Recovery({
   title,
@@ -107,9 +93,9 @@ export default function App() {
     setLoading(true);
     setError("");
     try {
-      setProducts(
-        (await api<{ products: Product[] }>("/api/products")).products,
-      );
+      const data=await api<{products:Product[]}>('/api/products');
+      setProducts(data.products);
+      setItems(previous=>normalizeCart(previous,data.products));
     } catch (error) {
       setError((error as Error).message);
     } finally {
@@ -120,7 +106,7 @@ export default function App() {
     void loadProducts();
   }, []);
   useEffect(() => {
-    storage.set("bag", JSON.stringify(items));
+    storage.set("bag", serializeCart(items));
   }, [items]);
   useEffect(() => {
     if (!toast) return;
