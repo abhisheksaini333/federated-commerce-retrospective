@@ -1,3 +1,4 @@
+import {storage} from './storage';
 import {normalizeCart,serializeCart} from '../../packages/cart';
 import React, { Suspense, lazy, useEffect, useState } from "react";
 import {
@@ -17,29 +18,6 @@ import OrderDesk from "./OrderDesk";
 const Catalog = lazy(() => import("catalog/Catalog"));
 const Cart = lazy(() => import("cart/Cart"));
 type View = "shop" | "bag" | "checkout" | "confirmation" | "admin";
-// Keep retry receipts during this page lifetime even when browser storage is blocked.
-const memoryStorage = new Map<string, string>();
-const storage = {
-  get(key: string) {
-    try {
-      return (
-        sessionStorage.getItem(`fieldwork:${key}`) ??
-        memoryStorage.get(key) ??
-        null
-      );
-    } catch {
-      return memoryStorage.get(key) ?? null;
-    }
-  },
-  set(key: string, value: string) {
-    memoryStorage.set(key, value);
-    try {
-      sessionStorage.setItem(`fieldwork:${key}`, value);
-    } catch {
-      /* Browser privacy settings may disable storage. */
-    }
-  },
-};
 function readCart(): CartItem[] {
  try { const raw=storage.get('bag')||'[]';return raw.length<=64000?normalizeCart(JSON.parse(raw)):[]; } catch { return []; }
 }

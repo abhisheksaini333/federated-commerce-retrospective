@@ -1,0 +1,2 @@
+import assert from 'node:assert/strict';import {test} from 'node:test';import {createSafeStorage} from '../../apps/host/storage';
+test('newer fallback writes override stale durable values after quota failure',()=>{const storage=createSafeStorage(()=>({getItem:()=> 'old',setItem:()=>{throw Error('quota');}}));assert.equal(storage.get('key'),'old');storage.set('key','new');assert.equal(storage.get('key'),'new');});
