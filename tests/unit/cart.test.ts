@@ -7,3 +7,15 @@ test('saved cart normalization bounds duplicates and rejects unknown versions or
  assert.deepEqual(normalizeCart({version:2,items:[{productId:'notebook',quantity:1}]}),[]);
  assert.deepEqual(normalizeCart({version:1,items:[{productId:'notebook',quantity:1}]}),[{productId:'notebook',quantity:1}]);
 });
+
+import * as cart from '../../packages/cart';
+test('cart actions use current quantities and atomically enforce stock limits',()=>{
+ assert.equal(typeof cart.updateCart,'function');
+ const products=seedProducts.map(p=>({...p,stock:3}));let state:any=[];
+ for(let i=0;i<8;i++)state=cart.updateCart(state,{type:'add',productId:'notebook'},products);
+ assert.deepEqual(state,[{productId:'notebook',quantity:3}]);
+ assert.deepEqual(cart.updateCart(state,{type:'quantity',productId:'notebook',quantity:4},products),state);
+ assert.deepEqual(cart.updateCart(state,{type:'quantity',productId:'notebook',quantity:1.5},products),state);
+ assert.deepEqual(cart.updateCart(Object.freeze(state),{type:'quantity',productId:'notebook',quantity:0},products),[]);
+ assert.deepEqual(cart.updateCart(state,{type:'clear'},products),[]);
+});

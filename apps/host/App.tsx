@@ -1,5 +1,5 @@
 import {storage} from './storage';
-import {normalizeCart,serializeCart} from '../../packages/cart';
+import {normalizeCart,serializeCart,updateCart} from '../../packages/cart';
 import React, { Suspense, lazy, useEffect, useState } from "react";
 import {
   type CartItem,
@@ -104,15 +104,7 @@ export default function App() {
       setToast("That is all we have available for this bag.");
       return;
     }
-    setItems((previous) =>
-      existing
-        ? previous.map((item) =>
-            item.productId === product.id
-              ? { ...item, quantity: item.quantity + 1 }
-              : item,
-          )
-        : [...previous, { productId: product.id, quantity: 1 }],
-    );
+    setItems(previous=>updateCart(previous,{type:'add',productId:product.id},products));
     setToast(`${product.name} added to your bag.`);
   }
   async function placeOrder(event: React.FormEvent) {
@@ -339,17 +331,7 @@ export default function App() {
                 <Cart
                   items={items}
                   products={products}
-                  onQuantity={(id, quantity) =>
-                    setItems((previous) =>
-                      quantity === 0
-                        ? previous.filter((item) => item.productId !== id)
-                        : previous.map((item) =>
-                            item.productId === id
-                              ? { ...item, quantity }
-                              : item,
-                          ),
-                    )
-                  }
+                  onQuantity={(productId,quantity)=>setItems(previous=>updateCart(previous,{type:'quantity',productId,quantity},products))}
                   onCheckout={() => navigate("checkout")}
                 />
               </Suspense>
