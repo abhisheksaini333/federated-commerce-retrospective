@@ -1,3 +1,4 @@
+import {checkoutIntent} from './checkout';
 import {storage} from './storage';
 import {normalizeCart,serializeCart,updateCart} from '../../packages/cart';
 import React, { Suspense, lazy, useEffect, useState } from "react";
@@ -117,19 +118,9 @@ export default function App() {
       customerName: name.trim(),
       shipping,
     };
-    const fingerprint = JSON.stringify(payload);
-    let saved: { fingerprint: string; key: string } | null = null;
     try {
-      saved = JSON.parse(storage.get("checkout") || "null");
-    } catch {
-      /* New key for invalid storage. */
-    }
-    const key =
-      saved?.fingerprint === fingerprint && typeof saved.key === "string"
-        ? saved.key
-        : crypto.randomUUID();
-    storage.set("checkout", JSON.stringify({ fingerprint, key }));
-    try {
+      const {key,fingerprint}=checkoutIntent(payload,storage.get('checkout'),()=>crypto.randomUUID());
+      storage.set('checkout',JSON.stringify({key,fingerprint,payload}));
       const result = await api<{ order: Order }>("/api/checkout", {
         method: "POST",
         headers: { "Idempotency-Key": key },
