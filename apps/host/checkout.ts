@@ -11,3 +11,11 @@ export function checkoutIntent(payload:CheckoutRequest,raw:string|null,newKey:()
  try{const key=newKey();if(!/^[A-Za-z0-9_-]{8,100}$/.test(key))throw Error();return {key,fingerprint,payload:parsed.value};}
  catch{throw new Error('A secure checkout reference could not be created. Reload and try again.');}
 }
+
+export function readDraft(raw:string|null):{name:string;shipping:CheckoutRequest['shipping']} {
+ try {const value=JSON.parse(raw||'null');if(typeof value?.name==='string'&&value.name.length<=60&&['standard','express'].includes(value.shipping))return {name:value.name,shipping:value.shipping};}catch{}
+ return {name:'Alex Demo',shipping:'standard'};
+}
+export function readPending(raw:string|null):CheckoutIntent|null {
+ try {if(!raw||raw.length>64000)return null;const saved=JSON.parse(raw);if(!saved?.payload)return null;const intent=checkoutIntent(saved.payload,raw,()=>{throw Error();});return intent.fingerprint===saved.fingerprint?intent:null;}catch{return null;}
+}

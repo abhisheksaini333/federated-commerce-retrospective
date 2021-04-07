@@ -18,3 +18,8 @@ test('checkout reference failure unlocks the form with recovery guidance',async(
  await page.goto('/');await page.getByRole('button',{name:'Add Everyday notebook'}).click();await page.getByRole('button',{name:'Bag (1)'}).click();await page.getByRole('button',{name:'Continue to checkout'}).click();await page.getByRole('button',{name:'Place demo order'}).click();
  await expect(page.getByRole('alert')).toContainText('secure checkout reference');await expect(page.getByRole('button',{name:'Place demo order'})).toBeEnabled();
 });
+
+test('checkout draft survives reload without losing delivery or name',async({page})=>{
+ await page.goto('/');await page.getByRole('button',{name:'Add Everyday notebook'}).click();await page.getByRole('button',{name:'Bag (1)'}).click();await page.getByRole('button',{name:'Continue to checkout'}).click();await page.getByLabel('Demo name').fill('Draft Demo');await page.getByRole('radio',{name:/A little sooner/}).check();await page.reload();
+ await expect(page.getByLabel('Demo name')).toHaveValue('Draft Demo');await expect(page.getByRole('radio',{name:/A little sooner/})).toBeChecked();await expect(page.getByRole('button',{name:'Bag (1)'})).toBeVisible();
+});

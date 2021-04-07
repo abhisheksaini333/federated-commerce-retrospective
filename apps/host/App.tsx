@@ -1,4 +1,4 @@
-import {checkoutIntent} from './checkout';
+import {checkoutIntent,readDraft,readPending} from './checkout';
 import {storage} from './storage';
 import {normalizeCart,serializeCart,updateCart} from '../../packages/cart';
 import React, { Suspense, lazy, useEffect, useState } from "react";
@@ -46,16 +46,18 @@ function Recovery({
 }
 
 export default function App() {
+  const [pendingInitial]=useState(()=>readPending(storage.get("checkout")));
+  const [draftInitial]=useState(()=>readDraft(storage.get("draft")));
   const [view, setView] = useState<View>(() =>
-    storage.get("view") === "bag" ? "bag" : "shop",
+    pendingInitial || storage.get("view")==="checkout" ? "checkout" : storage.get("view") === "bag" ? "bag" : "shop",
   );
   const [products, setProducts] = useState<Product[]>([]);
-  const [items, setItems] = useState<CartItem[]>(readCart);
+  const [items, setItems] = useState<CartItem[]>(()=>pendingInitial?.payload.items??readCart());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [toast, setToast] = useState("");
-  const [name, setName] = useState("Alex Demo");
-  const [shipping, setShipping] = useState<Shipping>("standard");
+  const [name, setName] = useState(pendingInitial?.payload.customerName??draftInitial.name);
+  const [shipping, setShipping] = useState<Shipping>(pendingInitial?.payload.shipping??draftInitial.shipping);
   const [placing, setPlacing] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
   const [order, setOrder] = useState<Order | null>(null);
@@ -84,6 +86,7 @@ export default function App() {
   useEffect(() => {
     void loadProducts();
   }, []);
+  useEffect(()=>{storage.set("draft",JSON.stringify({name,shipping}));},[name,shipping]);
   useEffect(() => {
     storage.set("bag", serializeCart(items));
   }, [items]);
@@ -95,7 +98,7 @@ export default function App() {
   function navigate(next: View) {
     if (placing && next !== "confirmation") return;
     setView(next);
-    storage.set("view", next === "bag" ? "bag" : "shop");
+    storage.set("view", next === "checkout" ? "checkout" : next === "bag" ? "bag" : "shop");
     setCheckoutError("");
     window.scrollTo({ top: 0 });
   }
@@ -119,8 +122,9 @@ export default function App() {
       shipping,
     };
     try {
-      const {key,fingerprint}=checkoutIntent(payload,storage.get('checkout'),()=>crypto.randomUUID());
-      storage.set('checkout',JSON.stringify({key,fingerprint,payload}));
+      const intent=checkoutIntent(payload,storage.get('checkout'),()=>crypto.randomUUID());
+      const {key,fingerprint}=intent;
+      storage.set('checkout',JSON.stringify(intent));
       const result = await api<{ order: Order }>("/api/checkout", {
         method: "POST",
         headers: { "Idempotency-Key": key },
