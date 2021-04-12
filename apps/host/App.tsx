@@ -12,7 +12,7 @@ import {
   shippingCents,
 } from "../../packages/contracts";
 import { Artwork } from "../../packages/ui/Artwork";
-import { api } from "./api";
+import { api,ApiFailure } from "./api";
 import { RemoteBoundary } from "./RemoteBoundary";
 import OrderDesk from "./OrderDesk";
 
@@ -47,6 +47,7 @@ function Recovery({
 
 export default function App() {
   const [pendingInitial]=useState(()=>readPending(storage.get("checkout")));
+  const [pending,setPending]=useState(pendingInitial);
   const [draftInitial]=useState(()=>readDraft(storage.get("draft")));
   const [view, setView] = useState<View>(() =>
     pendingInitial || storage.get("view")==="checkout" ? "checkout" : storage.get("view") === "bag" ? "bag" : "shop",
@@ -96,7 +97,7 @@ export default function App() {
     return () => window.clearTimeout(timer);
   }, [toast]);
   function navigate(next: View) {
-    if (placing && next !== "confirmation") return;
+    if ((placing || pending) && next !== "confirmation") return;
     setView(next);
     storage.set("view", next === "checkout" ? "checkout" : next === "bag" ? "bag" : "shop");
     setCheckoutError("");
@@ -122,7 +123,8 @@ export default function App() {
       shipping,
     };
     try {
-      const intent=checkoutIntent(payload,storage.get('checkout'),()=>crypto.randomUUID());
+      const intent=pending??checkoutIntent(payload,storage.get('checkout'),()=>crypto.randomUUID());
+      setPending(intent);
       const {key,fingerprint}=intent;
       storage.set('checkout',JSON.stringify(intent));
       const result = await api<{ order: Order }>("/api/checkout", {
@@ -130,16 +132,21 @@ export default function App() {
         headers: { "Idempotency-Key": key },
         body: fingerprint,
       });
-      setOrder(result.order);
-      setItems([]);
-      storage.set("checkout", "null");
-      navigate("confirmation");
-      void loadProducts();
+      acceptOrder(result.order);
     } catch (error) {
+      if(error instanceof ApiFailure && error.status && error.status<500){setPending(null);storage.set("checkout","null");}
       setCheckoutError((error as Error).message);
     } finally {
       setPlacing(false);
     }
+  }
+  function acceptOrder(accepted:Order){setOrder(accepted);setItems([]);setPending(null);storage.set('checkout','null');navigate('confirmation');void loadProducts();}
+  async function resolvePending(){
+    if(!pending||placing)return;setPlacing(true);setCheckoutError('');
+    try {const result=await api<{status:'unknown'|'accepted';order?:Order}>('/api/checkout/resolve',{method:'POST',headers:{'Idempotency-Key':pending.key},body:pending.fingerprint});
+      if(result.status==='accepted'&&result.order)acceptOrder(result.order);
+      else setCheckoutError('No receipt yet. Retry the same order safely with Place demo order.');
+    }catch(error){setCheckoutError((error as Error).message);}finally{setPlacing(false);}
   }
   const catalogFallback = (
     <Recovery
@@ -174,7 +181,7 @@ export default function App() {
       <header className="site-header">
         <button
           className="brand"
-          disabled={placing}
+          disabled={placing || !!pending}
           onClick={() => navigate("shop")}
           aria-label="Fieldwork Supply home"
         >
@@ -188,14 +195,14 @@ export default function App() {
         <nav aria-label="Main navigation">
           <button
             className={view === "shop" ? "nav-active" : ""}
-            disabled={placing}
+            disabled={placing || !!pending}
             onClick={() => navigate("shop")}
           >
             Shop
           </button>
           <button
             className={view === "admin" ? "nav-active" : ""}
-            disabled={placing}
+            disabled={placing || !!pending}
             onClick={() => navigate("admin")}
           >
             Order desk
@@ -203,7 +210,7 @@ export default function App() {
         </nav>
         <button
           className="bag-button"
-          disabled={placing}
+          disabled={placing || !!pending}
           onClick={() => navigate("bag")}
         >
           Bag ({count}) <span aria-hidden="true">↗</span>
@@ -336,7 +343,7 @@ export default function App() {
           <section className="page-section">
             <button
               className="text-button"
-              disabled={placing}
+              disabled={placing || !!pending}
               onClick={() => navigate("bag")}
             >
               ← Back to your bag
@@ -357,14 +364,14 @@ export default function App() {
                 <label htmlFor="demo-name">Demo name</label>
                 <input
                   id="demo-name"
-                  disabled={placing}
+                  disabled={placing || !!pending}
                   value={name}
                   onChange={(event) => setName(event.target.value)}
                   required
                   maxLength={60}
                   autoComplete="off"
                 />
-                <fieldset disabled={placing}>
+                <fieldset disabled={placing || !!pending}>
                   <legend>Delivery</legend>
                   <label className="delivery-option">
                     <input
@@ -391,12 +398,14 @@ export default function App() {
                     <strong>$12.00</strong>
                   </label>
                 </fieldset>
+                {pending && <div className="notice" role="status">We are keeping this exact order until its outcome is known. <button type="button" className="text-button" disabled={placing} onClick={()=>void resolvePending()}>Check order status</button></div>}
                 {checkoutError && (
                   <div role="alert" className="notice">
                     {checkoutError}
                     <button
                       type="button"
                       className="text-button"
+                      disabled={!!pending}
                       onClick={() => {
                         navigate("bag");
                         void loadProducts();

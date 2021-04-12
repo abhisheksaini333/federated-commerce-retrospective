@@ -23,3 +23,9 @@ test('checkout draft survives reload without losing delivery or name',async({pag
  await page.goto('/');await page.getByRole('button',{name:'Add Everyday notebook'}).click();await page.getByRole('button',{name:'Bag (1)'}).click();await page.getByRole('button',{name:'Continue to checkout'}).click();await page.getByLabel('Demo name').fill('Draft Demo');await page.getByRole('radio',{name:/A little sooner/}).check();await page.reload();
  await expect(page.getByLabel('Demo name')).toHaveValue('Draft Demo');await expect(page.getByRole('radio',{name:/A little sooner/})).toBeChecked();await expect(page.getByRole('button',{name:'Bag (1)'})).toBeVisible();
 });
+
+test('lost checkout response locks edits until receipt resolution confirms the original order',async({page})=>{
+ await page.route('**/api/checkout',async route=>{await route.fetch();await route.abort('connectionfailed');});
+ await page.goto('/');await page.getByRole('button',{name:'Add Everyday notebook'}).click();await page.getByRole('button',{name:'Bag (1)'}).click();await page.getByRole('button',{name:'Continue to checkout'}).click();await page.getByRole('button',{name:'Place demo order'}).click();await expect(page.getByRole('alert')).toBeVisible();
+ await expect(page.getByRole('button',{name:'Shop',exact:true})).toBeDisabled();await expect(page.getByLabel('Demo name')).toBeDisabled();await page.getByRole('button',{name:'Check order status'}).click();await expect(page.getByRole('heading',{name:'A good day for good things.'})).toBeVisible();await expect(page.getByRole('button',{name:'Bag (0)'})).toBeEnabled();
+});
