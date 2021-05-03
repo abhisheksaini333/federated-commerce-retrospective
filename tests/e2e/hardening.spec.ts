@@ -29,3 +29,8 @@ test('lost checkout response locks edits until receipt resolution confirms the o
  await page.goto('/');await page.getByRole('button',{name:'Add Everyday notebook'}).click();await page.getByRole('button',{name:'Bag (1)'}).click();await page.getByRole('button',{name:'Continue to checkout'}).click();await page.getByRole('button',{name:'Place demo order'}).click();await expect(page.getByRole('alert')).toBeVisible();
  await expect(page.getByRole('button',{name:'Shop',exact:true})).toBeDisabled();await expect(page.getByLabel('Demo name')).toBeDisabled();await page.getByRole('button',{name:'Check order status'}).click();await expect(page.getByRole('heading',{name:'A good day for good things.'})).toBeVisible();await expect(page.getByRole('button',{name:'Bag (0)'})).toBeEnabled();
 });
+
+test('confirmation reload preserves receipt without resubmitting checkout',async({page})=>{
+ let submits=0;page.on('request',request=>{if(request.url().endsWith('/api/checkout'))submits++;});
+ await page.goto('/');await page.getByRole('button',{name:'Add Everyday notebook'}).click();await page.getByRole('button',{name:'Bag (1)'}).click();await page.getByRole('button',{name:'Continue to checkout'}).click();await page.getByRole('button',{name:'Place demo order'}).click();const receipt=page.getByTestId('order-id');await expect(receipt).toBeVisible();const id=await receipt.textContent();await page.reload();await expect(receipt).toHaveText(id!);expect(submits).toBe(1);
+});

@@ -1,3 +1,4 @@
+import {validOrder} from '../../packages/contracts/responses';
 import {checkoutIntent,readDraft,readPending} from './checkout';
 import {storage} from './storage';
 import {normalizeCart,serializeCart,updateCart} from '../../packages/cart';
@@ -19,6 +20,7 @@ import OrderDesk from "./OrderDesk";
 const Catalog = lazy(() => import("catalog/Catalog"));
 const Cart = lazy(() => import("cart/Cart"));
 type View = "shop" | "bag" | "checkout" | "confirmation" | "admin";
+function readReceipt():Order|null {try{const value=JSON.parse(storage.get('receipt')||'null');return validOrder(value)?value:null;}catch{return null;}}
 function readCart(): CartItem[] {
  try { const raw=storage.get('bag')||'[]';return raw.length<=64000?normalizeCart(JSON.parse(raw)):[]; } catch { return []; }
 }
@@ -46,11 +48,12 @@ function Recovery({
 }
 
 export default function App() {
+  const [receiptInitial]=useState(readReceipt);
   const [pendingInitial]=useState(()=>readPending(storage.get("checkout")));
   const [pending,setPending]=useState(pendingInitial);
   const [draftInitial]=useState(()=>readDraft(storage.get("draft")));
   const [view, setView] = useState<View>(() =>
-    pendingInitial || storage.get("view")==="checkout" ? "checkout" : storage.get("view") === "bag" ? "bag" : "shop",
+    pendingInitial ? "checkout" : storage.get("view")==="confirmation" && receiptInitial ? "confirmation" : storage.get("view")==="checkout" ? "checkout" : storage.get("view") === "bag" ? "bag" : "shop",
   );
   const [products, setProducts] = useState<Product[]>([]);
   const [items, setItems] = useState<CartItem[]>(()=>pendingInitial?.payload.items??readCart());
@@ -61,7 +64,7 @@ export default function App() {
   const [shipping, setShipping] = useState<Shipping>(pendingInitial?.payload.shipping??draftInitial.shipping);
   const [placing, setPlacing] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
-  const [order, setOrder] = useState<Order | null>(null);
+  const [order, setOrder] = useState<Order | null>(receiptInitial);
   const count = items.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = items.reduce(
     (sum, item) =>
@@ -99,7 +102,7 @@ export default function App() {
   function navigate(next: View) {
     if ((placing || pending) && next !== "confirmation") return;
     setView(next);
-    storage.set("view", next === "checkout" ? "checkout" : next === "bag" ? "bag" : "shop");
+    storage.set("view", next === "confirmation" ? "confirmation" : next === "checkout" ? "checkout" : next === "bag" ? "bag" : "shop");
     setCheckoutError("");
     window.scrollTo({ top: 0 });
   }
@@ -140,7 +143,7 @@ export default function App() {
       setPlacing(false);
     }
   }
-  function acceptOrder(accepted:Order){setOrder(accepted);setItems([]);setPending(null);storage.set('checkout','null');navigate('confirmation');void loadProducts();}
+  function acceptOrder(accepted:Order){storage.set('receipt',JSON.stringify(accepted));setOrder(accepted);setItems([]);setPending(null);storage.set('checkout','null');navigate('confirmation');void loadProducts();}
   async function resolvePending(){
     if(!pending||placing)return;setPlacing(true);setCheckoutError('');
     try {const result=await api<{status:'unknown'|'accepted';order?:Order}>('/api/checkout/resolve',{method:'POST',headers:{'Idempotency-Key':pending.key},body:pending.fingerprint});
