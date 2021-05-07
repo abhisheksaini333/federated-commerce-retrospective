@@ -117,7 +117,7 @@ export default function App() {
   }
   async function placeOrder(event: React.FormEvent) {
     event.preventDefault();
-    if (placing || items.length === 0) return;
+    if (placing || items.length === 0 || items.some(item=>item.quantity>(products.find(p=>p.id===item.productId)?.stock??0))) return;
     setPlacing(true);
     setCheckoutError("");
     const payload: CheckoutRequest = {

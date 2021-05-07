@@ -61,7 +61,8 @@ export default function Cart({
                       onQuantity(product.id, Number(event.target.value))
                     }
                   >
-                    {Array.from({ length: 10 }, (_, i) => i + 1).map(
+                    {item.quantity>product.stock && <option value={item.quantity} disabled>{item.quantity} (unavailable)</option>}
+                    {Array.from({ length: Math.min(10,product.stock) }, (_, i) => i + 1).map(
                       (value) => (
                         <option key={value} value={value}>
                           {value}
@@ -90,7 +91,7 @@ export default function Cart({
               Standard delivery is on us from $75. Delivery is calculated at
               checkout.
             </p>
-            <button className="button wide" onClick={onCheckout}>
+            <button className="button wide" disabled={lines.some(({item,product})=>item.quantity>product.stock)} onClick={onCheckout}>
               Continue to checkout <span aria-hidden="true">↗</span>
             </button>
             <span className="fine-print">
