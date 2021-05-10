@@ -34,3 +34,7 @@ test('confirmation reload preserves receipt without resubmitting checkout',async
  let submits=0;page.on('request',request=>{if(request.url().endsWith('/api/checkout'))submits++;});
  await page.goto('/');await page.getByRole('button',{name:'Add Everyday notebook'}).click();await page.getByRole('button',{name:'Bag (1)'}).click();await page.getByRole('button',{name:'Continue to checkout'}).click();await page.getByRole('button',{name:'Place demo order'}).click();const receipt=page.getByTestId('order-id');await expect(receipt).toBeVisible();const id=await receipt.textContent();await page.reload();await expect(receipt).toHaveText(id!);expect(submits).toBe(1);
 });
+
+test('collection filters survive bag navigation',async({page})=>{
+ await page.goto('/');await page.getByRole('button',{name:'Desk',exact:true}).click();await page.getByRole('searchbox').fill('notebook');await page.getByRole('button',{name:'Bag (0)'}).click();await page.getByRole('button',{name:'Shop',exact:true}).click();await expect(page.getByRole('searchbox')).toHaveValue('notebook');await expect(page.getByRole('button',{name:'Desk',exact:true})).toHaveAttribute('aria-pressed','true');
+});

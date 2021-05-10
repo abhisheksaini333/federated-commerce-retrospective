@@ -6,9 +6,10 @@ import {
 } from "../../packages/contracts";
 import { Artwork } from "../../packages/ui/Artwork";
 
-export default function Catalog({ products, onAdd }: CatalogProps) {
-  const [category, setCategory] = useState<Category | "All finds">("All finds");
-  const [search, setSearch] = useState("");
+export default function Catalog({ products, onAdd,filters,onFilters }: CatalogProps) {
+  const {category,search}=filters;
+  const setCategory=(category:typeof filters.category)=>onFilters({...filters,category});
+  const setSearch=(search:string)=>onFilters({...filters,search});
   const filtered = products.filter(
     (product) =>
       (category === "All finds" || product.category === category) &&
@@ -62,8 +63,7 @@ export default function Catalog({ products, onAdd }: CatalogProps) {
           <button
             className="button"
             onClick={() => {
-              setSearch("");
-              setCategory("All finds");
+              onFilters({search:"",category:"All finds"});
             }}
           >
             Clear filters

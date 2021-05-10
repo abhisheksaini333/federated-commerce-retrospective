@@ -5,6 +5,7 @@ import {normalizeCart,serializeCart,updateCart} from '../../packages/cart';
 import React, { Suspense, lazy, useEffect, useState } from "react";
 import {
   type CartItem,
+  type CatalogFilters,
   type CheckoutRequest,
   type Order,
   type Product,
@@ -55,6 +56,7 @@ export default function App() {
   const [view, setView] = useState<View>(() =>
     pendingInitial ? "checkout" : storage.get("view")==="confirmation" && receiptInitial ? "confirmation" : storage.get("view")==="checkout" ? "checkout" : storage.get("view") === "bag" ? "bag" : "shop",
   );
+  const [filters,setFilters]=useState<CatalogFilters>({category:"All finds",search:""});
   const [products, setProducts] = useState<Product[]>([]);
   const [items, setItems] = useState<CartItem[]>(()=>pendingInitial?.payload.items??readCart());
   const [loading, setLoading] = useState(true);
@@ -292,7 +294,7 @@ export default function App() {
                     </div>
                   }
                 >
-                  <Catalog products={products} onAdd={add} />
+                  <Catalog products={products} onAdd={add} filters={filters} onFilters={setFilters} />
                 </Suspense>
               </RemoteBoundary>
             )}
