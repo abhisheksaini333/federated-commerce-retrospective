@@ -1,3 +1,4 @@
+import {matchesSearch} from "./search";
 import React, { useState } from "react";
 import {
   type CatalogProps,
@@ -13,9 +14,7 @@ export default function Catalog({ products, onAdd,filters,onFilters }: CatalogPr
   const filtered = products.filter(
     (product) =>
       (category === "All finds" || product.category === category) &&
-      `${product.name} ${product.description}`
-        .toLowerCase()
-        .includes(search.toLowerCase()),
+      matchesSearch(product,search),
   );
   return (
     <section
