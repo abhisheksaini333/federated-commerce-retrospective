@@ -1,4 +1,4 @@
-import {matchesSearch} from "./search";
+import {matchesSearch,sortProducts,SortOrder} from "./search";
 import React, { useState } from "react";
 import {
   type CatalogProps,
@@ -11,11 +11,11 @@ export default function Catalog({ products, onAdd,filters,onFilters }: CatalogPr
   const {category,search}=filters;
   const setCategory=(category:typeof filters.category)=>onFilters({...filters,category});
   const setSearch=(search:string)=>onFilters({...filters,search});
-  const filtered = products.filter(
+  const filtered = sortProducts(products.filter(
     (product) =>
       (category === "All finds" || product.category === category) &&
       matchesSearch(product,search),
-  );
+  ),filters.sort??"featured");
   return (
     <section
       id="collection"
@@ -42,6 +42,7 @@ export default function Catalog({ products, onAdd,filters,onFilters }: CatalogPr
             </button>
           ))}
         </div>
+        <label>Sort finds <select value={filters.sort??'featured'} onChange={event=>onFilters({...filters,sort:event.target.value as SortOrder})}><option value="featured">Featured</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="name">Name</option></select></label>
         <label className="search-label">
           <span className="sr-only">Search the collection</span>
           <input

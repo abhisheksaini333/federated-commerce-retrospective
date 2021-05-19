@@ -40,7 +40,7 @@ export interface ApiError {
   error: string;
   code: string;
 }
-export interface CatalogFilters {category:Category|"All finds";search:string}
+export interface CatalogFilters {category:Category|"All finds";search:string;sort?:"featured"|"price-low"|"price-high"|"name"}
 export interface CatalogProps {
   filters:CatalogFilters;
   onFilters:(filters:CatalogFilters)=>void;
