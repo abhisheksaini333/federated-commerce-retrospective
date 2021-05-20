@@ -1,7 +1,7 @@
 import {validOrder} from '../../packages/contracts/responses';
 import {checkoutIntent,readDraft,readPending} from './checkout';
 import {storage} from './storage';
-import {normalizeCart,serializeCart,updateCart} from '../../packages/cart';
+import {normalizeCart,serializeCart,updateCart,restoreRemoved,RemovedLine} from '../../packages/cart';
 import React, { Suspense, lazy, useEffect, useState } from "react";
 import {
   type CartItem,
@@ -61,6 +61,7 @@ export default function App() {
   const [items, setItems] = useState<CartItem[]>(()=>pendingInitial?.payload.items??readCart());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [removed,setRemoved]=useState<RemovedLine|null>(null);
   const [toast, setToast] = useState("");
   const [name, setName] = useState(pendingInitial?.payload.customerName??draftInitial.name);
   const [shipping, setShipping] = useState<Shipping>(pendingInitial?.payload.shipping??draftInitial.shipping);
@@ -107,6 +108,11 @@ export default function App() {
     storage.set("view", next === "confirmation" ? "confirmation" : next === "checkout" ? "checkout" : next === "bag" ? "bag" : "shop");
     setCheckoutError("");
     window.scrollTo({ top: 0 });
+  }
+  useEffect(()=>{if(!removed)return;const timer=setTimeout(()=>setRemoved(null),Math.max(0,removed.expiresAt-Date.now()));return()=>clearTimeout(timer);},[removed]);
+  function changeQuantity(productId:string,quantity:number){
+    if(quantity===0){const item=items.find(item=>item.productId===productId);if(item)setRemoved({item,expiresAt:Date.now()+10000});}
+    setItems(previous=>updateCart(previous,{type:'quantity',productId,quantity},products));
   }
   function add(product: Product) {
     const existing = items.find((item) => item.productId === product.id);
@@ -222,6 +228,7 @@ export default function App() {
         </button>
       </header>
       <main id="main">
+        {removed&&<div className="notice" role="status">Item removed. <button className="text-button" onClick={()=>{setItems(previous=>restoreRemoved(previous,removed,products,Date.now()));setRemoved(null);}}>Undo removal</button></div>}
         {view === "shop" && (
           <>
             <section className="hero">
@@ -338,7 +345,7 @@ export default function App() {
                 <Cart
                   items={items}
                   products={products}
-                  onQuantity={(productId,quantity)=>setItems(previous=>updateCart(previous,{type:'quantity',productId,quantity},products))}
+                  onQuantity={changeQuantity}
                   onCheckout={() => navigate("checkout")}
                 />
               </Suspense>

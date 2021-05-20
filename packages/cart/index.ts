@@ -24,3 +24,10 @@ export function updateCart(previous:readonly CartItem[],action:CartAction,produc
  if(!existing&&current.length>=6)return current;
  return normalizeCart([...current.filter(item=>item.productId!==product.id),{productId:product.id,quantity}],products);
 }
+
+export interface RemovedLine {item:CartItem;expiresAt:number}
+export function restoreRemoved(items:readonly CartItem[],removed:RemovedLine,products:readonly Product[],now:number):CartItem[]{
+ if(now>removed.expiresAt||items.some(item=>item.productId===removed.item.productId))return [...items];
+ const stock=products.find(p=>p.id===removed.item.productId)?.stock??0;
+ return updateCart(items,{type:'quantity',productId:removed.item.productId,quantity:Math.min(stock,removed.item.quantity)},products);
+}

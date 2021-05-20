@@ -19,3 +19,10 @@ test('cart actions use current quantities and atomically enforce stock limits',(
  assert.deepEqual(cart.updateCart(Object.freeze(state),{type:'quantity',productId:'notebook',quantity:0},products),[]);
  assert.deepEqual(cart.updateCart(state,{type:'clear'},products),[]);
 });
+
+test('undo removal expires and respects current stock without replacing newer quantities',()=>{
+ const removed={item:{productId:'notebook',quantity:3},expiresAt:500};
+ assert.deepEqual(cart.restoreRemoved([],removed,seedProducts,501),[]);
+ assert.deepEqual(cart.restoreRemoved([],removed,seedProducts.map(p=>({...p,stock:2})),499),[{productId:'notebook',quantity:2}]);
+ assert.deepEqual(cart.restoreRemoved([{productId:'notebook',quantity:1}],removed,seedProducts,499),[{productId:'notebook',quantity:1}]);
+});

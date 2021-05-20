@@ -38,3 +38,7 @@ test('confirmation reload preserves receipt without resubmitting checkout',async
 test('collection filters survive bag navigation',async({page})=>{
  await page.goto('/');await page.getByRole('button',{name:'Desk',exact:true}).click();await page.getByRole('searchbox').fill('notebook');await page.getByRole('button',{name:'Bag (0)'}).click();await page.getByRole('button',{name:'Shop',exact:true}).click();await expect(page.getByRole('searchbox')).toHaveValue('notebook');await expect(page.getByRole('button',{name:'Desk',exact:true})).toHaveAttribute('aria-pressed','true');
 });
+
+test('removed cart line can be undone with its quantity',async({page})=>{
+ await page.goto('/');await page.getByRole('button',{name:'Add Everyday notebook'}).click();await page.getByRole('button',{name:'Bag (1)'}).click();await page.getByLabel('Quantity for Everyday notebook').selectOption('3');await page.getByRole('button',{name:'Remove Everyday notebook'}).click();await page.getByRole('button',{name:'Undo removal'}).click();await expect(page.getByLabel('Quantity for Everyday notebook')).toHaveValue('3');
+});
