@@ -1528,3 +1528,5 @@ footer > div:last-child > span:last-child {
     animation: none !important;
   }
 }
+
+dialog{max-width:min(32rem,90vw);border:1px solid #303c2c;padding:2rem;background:#f7f4eb;color:#233329}dialog::backdrop{background:#13251a99}dialog button{margin:.5rem .5rem 0 0}

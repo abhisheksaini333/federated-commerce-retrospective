@@ -42,3 +42,7 @@ test('collection filters survive bag navigation',async({page})=>{
 test('removed cart line can be undone with its quantity',async({page})=>{
  await page.goto('/');await page.getByRole('button',{name:'Add Everyday notebook'}).click();await page.getByRole('button',{name:'Bag (1)'}).click();await page.getByLabel('Quantity for Everyday notebook').selectOption('3');await page.getByRole('button',{name:'Remove Everyday notebook'}).click();await page.getByRole('button',{name:'Undo removal'}).click();await expect(page.getByLabel('Quantity for Everyday notebook')).toHaveValue('3');
 });
+
+test('empty bag confirmation preserves items on cancel and restores focus',async({page})=>{
+ await page.goto('/');await page.getByRole('button',{name:'Add Everyday notebook'}).click();await page.getByRole('button',{name:'Bag (1)'}).click();await page.getByRole('button',{name:'Empty bag',exact:true}).click();await expect(page.getByRole('dialog')).toBeVisible();await page.getByRole('button',{name:'Keep my finds'}).click();await expect(page.getByRole('button',{name:'Empty bag',exact:true})).toBeFocused();await expect(page.getByRole('button',{name:'Bag (1)'})).toBeVisible();await page.getByRole('button',{name:'Empty bag',exact:true}).click();await page.getByRole('button',{name:'Yes, empty bag'}).click();await expect(page.getByRole('button',{name:'Bag (0)'})).toBeVisible();
+});

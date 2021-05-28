@@ -345,6 +345,7 @@ export default function App() {
                 <Cart
                   items={items}
                   products={products}
+                  onClear={()=>{setItems([]);setRemoved(null);}}
                   onQuantity={changeQuantity}
                   onCheckout={() => navigate("checkout")}
                 />

@@ -1,4 +1,4 @@
-import React from "react";
+import React,{useRef,useState,useEffect} from "react";
 import { money, type CartProps } from "../../packages/contracts";
 import { Artwork } from "../../packages/ui/Artwork";
 
@@ -7,7 +7,11 @@ export default function Cart({
   products,
   onQuantity,
   onCheckout,
+  onClear,
 }: CartProps) {
+  const [confirm,setConfirm]=useState(false);const dialog=useRef<HTMLDialogElement>(null);const clearButton=useRef<HTMLButtonElement>(null);
+  useEffect(()=>{if(confirm)dialog.current?.showModal();},[confirm]);
+  const close=()=>{dialog.current?.close();setConfirm(false);clearButton.current?.focus();};
   const lines = items.flatMap((item) => {
     const product = products.find((p) => p.id === item.productId);
     return product ? [{ item, product }] : [];
@@ -20,6 +24,7 @@ export default function Cart({
     <section className="page-section" aria-labelledby="bag-title">
       <span className="eyebrow">A FEW GOOD FINDS</span>
       <h1 id="bag-title">Your everyday, upgraded.</h1>
+      {confirm&&<dialog ref={dialog} aria-labelledby="clear-title" onCancel={event=>{event.preventDefault();close();}}><h2 id="clear-title">Empty your bag?</h2><p>All selected finds will be removed.</p><button className="button secondary" onClick={close}>Keep my finds</button><button className="button" onClick={()=>{onClear?.();close();}}>Yes, empty bag</button></dialog>}
       {lines.length === 0 ? (
         <div className="empty-state">
           <h2>Your next everyday favorite is waiting.</h2>
@@ -83,6 +88,7 @@ export default function Cart({
           <aside className="summary-card">
             <span className="eyebrow">THE LITTLE DETAILS</span>
             <h2>Bag summary</h2>
+            {onClear&&<button ref={clearButton} className="text-button" onClick={()=>setConfirm(true)}>Empty bag</button>}
             <div className="summary-row">
               <span>Subtotal</span>
               <strong>{money(subtotal)}</strong>

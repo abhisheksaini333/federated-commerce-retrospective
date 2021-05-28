@@ -52,6 +52,7 @@ export interface CartProps {
   items: CartItem[];
   onQuantity: (id: string, quantity: number) => void;
   onCheckout: () => void;
+  onClear?:()=>void;
 }
 export function assertCents(cents:number):void {
  if(!Number.isSafeInteger(cents)||cents<0)throw new RangeError('Money must be non-negative safe integer cents.');
