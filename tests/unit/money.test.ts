@@ -7,3 +7,8 @@ test('money helpers reject unsafe cents and retain exact large fractional amount
  assert.equal(shippingCents('standard',7499),600);assert.equal(shippingCents('standard',7500),0);assert.equal(shippingCents('express',7500),1200);
  assert.throws(()=>shippingCents('invalid' as never,100),RangeError);
 });
+
+import * as contracts from '../../packages/contracts';
+test('standard delivery progress is exact at and around the threshold',()=>{
+ assert.deepEqual(contracts.deliveryProgress(7499),{remainingCents:1,percent:7499/75});assert.deepEqual(contracts.deliveryProgress(7500),{remainingCents:0,percent:100});assert.deepEqual(contracts.deliveryProgress(9000),{remainingCents:0,percent:100});assert.throws(()=>contracts.deliveryProgress(-1),RangeError);
+});

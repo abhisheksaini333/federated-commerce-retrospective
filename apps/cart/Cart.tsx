@@ -1,5 +1,5 @@
 import React,{useRef,useState,useEffect} from "react";
-import { money, type CartProps } from "../../packages/contracts";
+import { money, deliveryProgress, type CartProps } from "../../packages/contracts";
 import { Artwork } from "../../packages/ui/Artwork";
 
 export default function Cart({
@@ -93,10 +93,8 @@ export default function Cart({
               <span>Subtotal</span>
               <strong>{money(subtotal)}</strong>
             </div>
-            <p>
-              Standard delivery is on us from $75. Delivery is calculated at
-              checkout.
-            </p>
+            <p>{deliveryProgress(subtotal).remainingCents?`${money(deliveryProgress(subtotal).remainingCents)} away from free standard delivery.`:'Your bag qualifies for free standard delivery.'}</p>
+            <progress aria-label="Progress toward free standard delivery" max={100} value={deliveryProgress(subtotal).percent}/><p className="fine-print">Express delivery remains $12.</p>
             <button className="button wide" disabled={lines.some(({item,product})=>item.quantity>product.stock)} onClick={onCheckout}>
               Continue to checkout <span aria-hidden="true">↗</span>
             </button>

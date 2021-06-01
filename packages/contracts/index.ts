@@ -67,3 +67,5 @@ export function money(cents:number):string {
  assertCents(cents);
  return currencyFormatter.formatToParts(BigInt(cents)/100n).map(part=>part.type==='fraction'?String(cents%100).padStart(2,'0'):part.value).join('');
 }
+
+export function deliveryProgress(subtotal:number){assertCents(subtotal);return {remainingCents:Math.max(0,7500-subtotal),percent:Math.min(100,subtotal/75)};}
