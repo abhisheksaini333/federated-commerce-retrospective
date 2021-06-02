@@ -1,8 +1,9 @@
 import {validOrder} from '../../packages/contracts/responses';
 import {checkoutIntent,readDraft,readPending} from './checkout';
+import {LatestTask} from './latest';
 import {storage} from './storage';
 import {normalizeCart,serializeCart,updateCart,restoreRemoved,RemovedLine} from '../../packages/cart';
-import React, { Suspense, lazy, useEffect, useState } from "react";
+import React, { Suspense, lazy, useEffect, useState, useRef } from "react";
 import {
   type CartItem,
   type CatalogFilters,
@@ -77,21 +78,15 @@ export default function App() {
     0,
   );
   const delivery = shippingCents(shipping, subtotal);
+  const productRequest=useRef(new LatestTask());
   async function loadProducts() {
     setLoading(true);
     setError("");
-    try {
-      const data=await api<{products:Product[]}>('/api/products');
-      setProducts(data.products);
-      setItems(previous=>normalizeCart(previous,data.products));
-    } catch (error) {
-      setError((error as Error).message);
-    } finally {
-      setLoading(false);
-    }
+    await productRequest.current.run(signal=>api<{products:Product[]}>('/api/products',{signal}),data=>{setProducts(data.products);setItems(previous=>normalizeCart(previous,data.products));},error=>setError((error as Error).message),()=>setLoading(false));
   }
   useEffect(() => {
     void loadProducts();
+    return()=>productRequest.current.cancel();
   }, []);
   useEffect(()=>{storage.set("draft",JSON.stringify({name,shipping}));},[name,shipping]);
   useEffect(() => {
