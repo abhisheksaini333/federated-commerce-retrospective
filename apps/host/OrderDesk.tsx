@@ -1,28 +1,25 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { money, type Order } from "../../packages/contracts";
+import {LatestTask} from './latest';
 import { api } from "./api";
 
 export default function OrderDesk() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [busy, setBusy] = useState("");
+  const [busy,setBusy]=useState<Set<string>>(new Set());
+  const listRequest=useRef(new LatestTask());
   async function refresh() {
     setLoading(true);
     setError("");
-    try {
-      setOrders((await api<{ orders: Order[] }>("/api/orders")).orders);
-    } catch (error) {
-      setError((error as Error).message);
-    } finally {
-      setLoading(false);
-    }
+    await listRequest.current.run(signal=>api<{orders:Order[]}>('/api/orders',{signal}),data=>setOrders(data.orders),error=>setError((error as Error).message),()=>setLoading(false));
   }
   useEffect(() => {
-    void refresh();
+    void refresh();return()=>listRequest.current.cancel();
   }, []);
   async function fulfill(id: string) {
-    setBusy(id);
+    listRequest.current.cancel();setLoading(false);
+    setBusy(previous=>new Set(previous).add(id));
     setError("");
     try {
       const { order } = await api<{ order: Order }>(`/api/orders/${id}`, {
@@ -35,7 +32,7 @@ export default function OrderDesk() {
     } catch (error) {
       setError((error as Error).message);
     } finally {
-      setBusy("");
+      setBusy(previous=>{const next=new Set(previous);next.delete(id);return next;});
     }
   }
   return (
@@ -51,7 +48,7 @@ export default function OrderDesk() {
         <button
           className="button secondary"
           onClick={() => void refresh()}
-          disabled={loading}
+          disabled={loading || busy.size>0}
         >
           Refresh orders
         </button>
@@ -129,9 +126,9 @@ export default function OrderDesk() {
                       <button
                         className="text-button"
                         onClick={() => void fulfill(order.id)}
-                        disabled={busy === order.id}
+                        disabled={busy.has(order.id)}
                       >
-                        {busy === order.id ? "Updating…" : "Mark fulfilled"}
+                        {busy.has(order.id) ? "Updating…" : "Mark fulfilled"}
                       </button>
                     ) : (
                       <span>Complete</span>

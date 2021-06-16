@@ -46,3 +46,12 @@ test('removed cart line can be undone with its quantity',async({page})=>{
 test('empty bag confirmation preserves items on cancel and restores focus',async({page})=>{
  await page.goto('/');await page.getByRole('button',{name:'Add Everyday notebook'}).click();await page.getByRole('button',{name:'Bag (1)'}).click();await page.getByRole('button',{name:'Empty bag',exact:true}).click();await expect(page.getByRole('dialog')).toBeVisible();await page.getByRole('button',{name:'Keep my finds'}).click();await expect(page.getByRole('button',{name:'Empty bag',exact:true})).toBeFocused();await expect(page.getByRole('button',{name:'Bag (1)'})).toBeVisible();await page.getByRole('button',{name:'Empty bag',exact:true}).click();await page.getByRole('button',{name:'Yes, empty bag'}).click();await expect(page.getByRole('button',{name:'Bag (0)'})).toBeVisible();
 });
+
+test('admin keeps each pending order action disabled independently',async({page,request})=>{
+ for(const name of ['Concurrent One','Concurrent Two'])await request.post('/api/checkout',{headers:{'Idempotency-Key':name.replace(/ /g,'-')},data:{items:[{productId:'pencil',quantity:1}],customerName:name,shipping:'standard'}});
+ let release!:()=>void;const gate=new Promise<void>(resolve=>release=resolve);let held=false;
+ await page.route('**/api/orders/*',async route=>{if(!held&&route.request().method()==='PATCH'){held=true;await gate;}await route.continue();});
+ await page.goto('/');await page.getByRole('button',{name:'Order desk',exact:true}).click();const first=page.getByRole('row').filter({hasText:'Concurrent One'});const second=page.getByRole('row').filter({hasText:'Concurrent Two'});
+ try{await first.getByRole('button',{name:'Mark fulfilled'}).click();await second.getByRole('button',{name:'Mark fulfilled'}).click();await expect(second).toContainText('fulfilled');await expect(first.getByRole('button')).toBeDisabled();}finally{release();}
+ await expect(first).toContainText('fulfilled');
+});
