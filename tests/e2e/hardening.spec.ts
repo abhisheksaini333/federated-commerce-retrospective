@@ -55,3 +55,7 @@ test('admin keeps each pending order action disabled independently',async({page,
  try{await first.getByRole('button',{name:'Mark fulfilled'}).click();await second.getByRole('button',{name:'Mark fulfilled'}).click();await expect(second).toContainText('fulfilled');await expect(first.getByRole('button')).toBeDisabled();}finally{release();}
  await expect(first).toContainText('fulfilled');
 });
+
+test('view navigation announces its heading through focus and document title',async({page})=>{
+ await page.goto('/');await page.getByRole('button',{name:'Bag (0)'}).click();await expect(page.getByRole('heading',{name:'Your everyday, upgraded.'})).toBeFocused();await expect(page).toHaveTitle('Your bag · Fieldwork Supply');await page.getByRole('button',{name:'Order desk',exact:true}).click();await expect(page.getByRole('heading',{name:'The order desk.'})).toBeFocused();await expect(page).toHaveTitle('Order desk · Fieldwork Supply');
+});

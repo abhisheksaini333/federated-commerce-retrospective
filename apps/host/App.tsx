@@ -97,6 +97,13 @@ export default function App() {
     const timer = window.setTimeout(() => setToast(""), 3500);
     return () => window.clearTimeout(timer);
   }, [toast]);
+  useEffect(()=>{
+    const titles:Record<View,string>={shop:'Everyday collection',bag:'Your bag',checkout:'Checkout',confirmation:'Order confirmed',admin:'Order desk'};
+    document.title=`${titles[view]} · Fieldwork Supply`;
+    const focusHeading=()=>{const heading=document.querySelector<HTMLElement>('#main h1');if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true});return true;}return false;};
+    if(focusHeading())return;
+    const observer=new MutationObserver(()=>{if(focusHeading())observer.disconnect();});observer.observe(document.getElementById('main')!,{childList:true,subtree:true});return()=>observer.disconnect();
+  },[view]);
   function navigate(next: View) {
     if ((placing || pending) && next !== "confirmation") return;
     setView(next);
