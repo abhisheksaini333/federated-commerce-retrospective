@@ -229,7 +229,7 @@ export default function App() {
           Bag ({count}) <span aria-hidden="true">↗</span>
         </button>
       </header>
-      <main id="main">
+      <main id="main" tabIndex={-1}>
         {removed&&<div className="notice" role="status">Item removed. <button className="text-button" onClick={()=>{setItems(previous=>restoreRemoved(previous,removed,products,Date.now()));setRemoved(null);}}>Undo removal</button></div>}
         {view === "shop" && (
           <>

@@ -59,3 +59,7 @@ test('admin keeps each pending order action disabled independently',async({page,
 test('view navigation announces its heading through focus and document title',async({page})=>{
  await page.goto('/');await page.getByRole('button',{name:'Bag (0)'}).click();await expect(page.getByRole('heading',{name:'Your everyday, upgraded.'})).toBeFocused();await expect(page).toHaveTitle('Your bag · Fieldwork Supply');await page.getByRole('button',{name:'Order desk',exact:true}).click();await expect(page.getByRole('heading',{name:'The order desk.'})).toBeFocused();await expect(page).toHaveTitle('Order desk · Fieldwork Supply');
 });
+
+test('skip link moves keyboard focus into the main content',async({page})=>{
+ await page.goto('/');const skip=page.getByRole('link',{name:'Skip to content'});await skip.focus();await page.keyboard.press('Enter');await expect(page.locator('main')).toBeFocused();await page.getByRole('button',{name:'Bag (0)'}).click();await skip.focus();await page.keyboard.press('Enter');await expect(page.locator('main')).toBeFocused();
+});
