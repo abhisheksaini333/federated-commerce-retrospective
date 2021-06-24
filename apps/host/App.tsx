@@ -67,6 +67,7 @@ export default function App() {
   const [name, setName] = useState(pendingInitial?.payload.customerName??draftInitial.name);
   const [shipping, setShipping] = useState<Shipping>(pendingInitial?.payload.shipping??draftInitial.shipping);
   const [placing, setPlacing] = useState(false);
+  const [nameError,setNameError]=useState("");
   const [checkoutError, setCheckoutError] = useState("");
   const [order, setOrder] = useState<Order | null>(receiptInitial);
   const count = items.reduce((sum, item) => sum + item.quantity, 0);
@@ -129,6 +130,7 @@ export default function App() {
     event.preventDefault();
     if (placing || items.length === 0 || items.some(item=>item.quantity>(products.find(p=>p.id===item.productId)?.stock??0))) return;
     setPlacing(true);
+    setNameError("");
     setCheckoutError("");
     const payload: CheckoutRequest = {
       items,
@@ -148,6 +150,7 @@ export default function App() {
       acceptOrder(result.order);
     } catch (error) {
       if(error instanceof ApiFailure && error.status && error.status<500){setPending(null);storage.set("checkout","null");}
+      if(error instanceof ApiFailure){const field=error.issues.find(issue=>issue.path==='customerName');if(field){setNameError(field.message);setTimeout(()=>document.getElementById('demo-name')?.focus(),0);}}
       setCheckoutError((error as Error).message);
     } finally {
       setPlacing(false);
@@ -381,11 +384,14 @@ export default function App() {
                   id="demo-name"
                   disabled={placing || !!pending}
                   value={name}
-                  onChange={(event) => setName(event.target.value)}
+                  aria-invalid={!!nameError}
+                  aria-describedby={nameError?"name-error":undefined}
+                  onChange={(event) => {setName(event.target.value);setNameError("");}}
                   required
                   maxLength={60}
                   autoComplete="off"
                 />
+                {nameError&&<p id="name-error" className="line-warning">{nameError}</p>}
                 <fieldset disabled={placing || !!pending}>
                   <legend>Delivery</legend>
                   <label className="delivery-option">

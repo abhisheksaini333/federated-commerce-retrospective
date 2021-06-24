@@ -63,3 +63,8 @@ test('view navigation announces its heading through focus and document title',as
 test('skip link moves keyboard focus into the main content',async({page})=>{
  await page.goto('/');const skip=page.getByRole('link',{name:'Skip to content'});await skip.focus();await page.keyboard.press('Enter');await expect(page.locator('main')).toBeFocused();await page.getByRole('button',{name:'Bag (0)'}).click();await skip.focus();await page.keyboard.press('Enter');await expect(page.locator('main')).toBeFocused();
 });
+
+test('server field errors focus and describe the invalid checkout name',async({page})=>{
+ await page.route('**/api/checkout',route=>route.fulfill({status:400,json:{code:'INVALID_CHECKOUT',error:'Check your demo name.',issues:[{path:'customerName',message:'Use a single-line name.'}]}}));
+ await page.goto('/');await page.getByRole('button',{name:'Add Everyday notebook'}).click();await page.getByRole('button',{name:'Bag (1)'}).click();await page.getByRole('button',{name:'Continue to checkout'}).click();await page.getByRole('button',{name:'Place demo order'}).click();await expect(page.getByLabel('Demo name')).toHaveAttribute('aria-invalid','true');await expect(page.getByLabel('Demo name')).toBeFocused();await expect(page.getByLabel('Demo name')).toHaveAccessibleDescription('Use a single-line name.');await page.getByLabel('Demo name').fill('Fixed');await expect(page.getByLabel('Demo name')).not.toHaveAttribute('aria-invalid','true');
+});
