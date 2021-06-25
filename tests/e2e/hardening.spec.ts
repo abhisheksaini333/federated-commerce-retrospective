@@ -68,3 +68,7 @@ test('server field errors focus and describe the invalid checkout name',async({p
  await page.route('**/api/checkout',route=>route.fulfill({status:400,json:{code:'INVALID_CHECKOUT',error:'Check your demo name.',issues:[{path:'customerName',message:'Use a single-line name.'}]}}));
  await page.goto('/');await page.getByRole('button',{name:'Add Everyday notebook'}).click();await page.getByRole('button',{name:'Bag (1)'}).click();await page.getByRole('button',{name:'Continue to checkout'}).click();await page.getByRole('button',{name:'Place demo order'}).click();await expect(page.getByLabel('Demo name')).toHaveAttribute('aria-invalid','true');await expect(page.getByLabel('Demo name')).toBeFocused();await expect(page.getByLabel('Demo name')).toHaveAccessibleDescription('Use a single-line name.');await page.getByLabel('Demo name').fill('Fixed');await expect(page.getByLabel('Demo name')).not.toHaveAttribute('aria-invalid','true');
 });
+
+test('repeated cart changes update the live announcement and removal names the item',async({page})=>{
+ await page.goto('/');await page.getByRole('button',{name:'Add Everyday notebook'}).click();const live=page.locator('.toast');const first=await live.textContent();await page.getByRole('button',{name:'Add Everyday notebook'}).click();await expect(live).not.toHaveText(first!);await page.getByRole('button',{name:'Bag (2)'}).click();await page.getByRole('button',{name:'Remove Everyday notebook'}).click();await expect(live).toContainText('Everyday notebook removed');
+});

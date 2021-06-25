@@ -63,6 +63,8 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [removed,setRemoved]=useState<RemovedLine|null>(null);
+  const [announcement,setAnnouncement]=useState(0);
+  function announce(message:string){setToast(message);setAnnouncement(value=>value+1);}
   const [toast, setToast] = useState("");
   const [name, setName] = useState(pendingInitial?.payload.customerName??draftInitial.name);
   const [shipping, setShipping] = useState<Shipping>(pendingInitial?.payload.shipping??draftInitial.shipping);
@@ -97,7 +99,7 @@ export default function App() {
     if (!toast) return;
     const timer = window.setTimeout(() => setToast(""), 3500);
     return () => window.clearTimeout(timer);
-  }, [toast]);
+  }, [toast,announcement]);
   useEffect(()=>{
     const titles:Record<View,string>={shop:'Everyday collection',bag:'Your bag',checkout:'Checkout',confirmation:'Order confirmed',admin:'Order desk'};
     document.title=`${titles[view]} · Fieldwork Supply`;
@@ -114,17 +116,18 @@ export default function App() {
   }
   useEffect(()=>{if(!removed)return;const timer=setTimeout(()=>setRemoved(null),Math.max(0,removed.expiresAt-Date.now()));return()=>clearTimeout(timer);},[removed]);
   function changeQuantity(productId:string,quantity:number){
+    announce(`${products.find(p=>p.id===productId)?.name??'Item'} ${quantity===0?'removed from your bag.':`quantity changed to ${quantity}.`}`);
     if(quantity===0){const item=items.find(item=>item.productId===productId);if(item)setRemoved({item,expiresAt:Date.now()+10000});}
     setItems(previous=>updateCart(previous,{type:'quantity',productId,quantity},products));
   }
   function add(product: Product) {
     const existing = items.find((item) => item.productId === product.id);
     if ((existing?.quantity || 0) >= Math.min(product.stock, 10)) {
-      setToast("That is all we have available for this bag.");
+      announce("That is all we have available for this bag.");
       return;
     }
     setItems(previous=>updateCart(previous,{type:'add',productId:product.id},products));
-    setToast(`${product.name} added to your bag.`);
+    announce(`${product.name} added to your bag.`);
   }
   async function placeOrder(event: React.FormEvent) {
     event.preventDefault();
@@ -530,7 +533,7 @@ export default function App() {
         </div>
       </footer>
       <div className={`toast ${toast ? "visible" : ""}`} role="status">
-        {toast}
+        {toast}<span className="sr-only">{toast?` Update ${announcement}.`:""}</span>
       </div>
     </>
   );
