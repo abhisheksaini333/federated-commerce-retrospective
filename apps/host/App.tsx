@@ -213,6 +213,7 @@ export default function App() {
         </button>
         <nav aria-label="Main navigation">
           <button
+            aria-current={view==="shop"?"page":undefined}
             className={view === "shop" ? "nav-active" : ""}
             disabled={placing || !!pending}
             onClick={() => navigate("shop")}
@@ -220,6 +221,7 @@ export default function App() {
             Shop
           </button>
           <button
+            aria-current={view==="admin"?"page":undefined}
             className={view === "admin" ? "nav-active" : ""}
             disabled={placing || !!pending}
             onClick={() => navigate("admin")}
@@ -228,6 +230,7 @@ export default function App() {
           </button>
         </nav>
         <button
+          aria-current={view==="bag"?"page":undefined}
           className="bag-button"
           disabled={placing || !!pending}
           onClick={() => navigate("bag")}

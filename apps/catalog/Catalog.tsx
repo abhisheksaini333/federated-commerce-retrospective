@@ -30,7 +30,7 @@ export default function Catalog({ products, onAdd,filters,onFilters }: CatalogPr
         <p>Useful by nature. Good to have around.</p>
       </div>
       <div className="collection-toolbar">
-        <div className="filters" aria-label="Filter by category">
+        <div className="filters" role="group" aria-label="Filter by category">
           {(["All finds", "Desk", "Carry", "Tools"] as const).map((item) => (
             <button
               key={item}
