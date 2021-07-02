@@ -21,7 +21,7 @@ import OrderDesk from "./OrderDesk";
 
 const Catalog = lazy(() => import("catalog/Catalog"));
 const Cart = lazy(() => import("cart/Cart"));
-type View = "shop" | "bag" | "checkout" | "confirmation" | "admin";
+import {View,routeView,viewUrl} from "./navigation";
 function readReceipt():Order|null {try{const value=JSON.parse(storage.get('receipt')||'null');return validOrder(value)?value:null;}catch{return null;}}
 function readCart(): CartItem[] {
  try { const raw=storage.get('bag')||'[]';return raw.length<=64000?normalizeCart(JSON.parse(raw)):[]; } catch { return []; }
@@ -55,7 +55,7 @@ export default function App() {
   const [pending,setPending]=useState(pendingInitial);
   const [draftInitial]=useState(()=>readDraft(storage.get("draft")));
   const [view, setView] = useState<View>(() =>
-    pendingInitial ? "checkout" : storage.get("view")==="confirmation" && receiptInitial ? "confirmation" : storage.get("view")==="checkout" ? "checkout" : storage.get("view") === "bag" ? "bag" : "shop",
+    pendingInitial ? "checkout" : routeView(window.location.search)??(storage.get("view")==="confirmation" && receiptInitial ? "confirmation" : storage.get("view")==="checkout" ? "checkout" : storage.get("view") === "bag" ? "bag" : "shop"),
   );
   const [filters,setFilters]=useState<CatalogFilters>({category:"All finds",search:""});
   const [products, setProducts] = useState<Product[]>([]);
@@ -107,8 +107,13 @@ export default function App() {
     if(focusHeading())return;
     const observer=new MutationObserver(()=>{if(focusHeading())observer.disconnect();});observer.observe(document.getElementById('main')!,{childList:true,subtree:true});return()=>observer.disconnect();
   },[view]);
+  useEffect(()=>{
+    const pop=()=>{if(placing||pending){history.pushState(null,'',viewUrl(location.href,view));return;}const next=routeView(location.search)??'shop';setView(next==='confirmation'&&!order?'shop':next);};
+    window.addEventListener('popstate',pop);return()=>window.removeEventListener('popstate',pop);
+  },[view,placing,pending,order]);
   function navigate(next: View) {
     if ((placing || pending) && next !== "confirmation") return;
+    history.pushState(null,"",viewUrl(location.href,next));
     setView(next);
     storage.set("view", next === "confirmation" ? "confirmation" : next === "checkout" ? "checkout" : next === "bag" ? "bag" : "shop");
     setCheckoutError("");

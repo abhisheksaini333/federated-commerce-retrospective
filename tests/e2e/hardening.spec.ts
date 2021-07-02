@@ -72,3 +72,7 @@ test('server field errors focus and describe the invalid checkout name',async({p
 test('repeated cart changes update the live announcement and removal names the item',async({page})=>{
  await page.goto('/');await page.getByRole('button',{name:'Add Everyday notebook'}).click();const live=page.locator('.toast');const first=await live.textContent();await page.getByRole('button',{name:'Add Everyday notebook'}).click();await expect(live).not.toHaveText(first!);await page.getByRole('button',{name:'Bag (2)'}).click();await page.getByRole('button',{name:'Remove Everyday notebook'}).click();await expect(live).toContainText('Everyday notebook removed');
 });
+
+test('browser history restores views and supports direct order desk links',async({page})=>{
+ await page.goto('/');await page.getByRole('button',{name:'Bag (0)'}).click();await page.getByRole('button',{name:'Shop',exact:true}).click();await page.goBack();await expect(page.getByRole('heading',{name:'Your everyday, upgraded.'})).toBeVisible();await page.goForward();await expect(page.getByRole('searchbox')).toBeVisible();await page.goto('/?view=admin');await expect(page.getByRole('heading',{name:'The order desk.'})).toBeVisible();
+});
