@@ -76,3 +76,7 @@ test('repeated cart changes update the live announcement and removal names the i
 test('browser history restores views and supports direct order desk links',async({page})=>{
  await page.goto('/');await page.getByRole('button',{name:'Bag (0)'}).click();await page.getByRole('button',{name:'Shop',exact:true}).click();await page.goBack();await expect(page.getByRole('heading',{name:'Your everyday, upgraded.'})).toBeVisible();await page.goForward();await expect(page.getByRole('searchbox')).toBeVisible();await page.goto('/?view=admin');await expect(page.getByRole('heading',{name:'The order desk.'})).toBeVisible();
 });
+
+test('narrow layout keeps controls touchable and long receipt IDs inside the page',async({page})=>{
+ await page.setViewportSize({width:320,height:800});await page.goto('/');const add=page.getByRole('button',{name:'Add Everyday notebook'});await expect(add).toBeVisible();const size=await add.boundingBox();expect(size!.height).toBeGreaterThanOrEqual(44);await add.click();await page.getByRole('button',{name:'Bag (1)'}).click();const quantity=await page.getByLabel('Quantity for Everyday notebook').boundingBox();expect(quantity!.height).toBeGreaterThanOrEqual(44);await page.getByRole('button',{name:'Continue to checkout'}).click();await page.getByRole('button',{name:'Place demo order'}).click();await expect(page.getByTestId('order-id')).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+});
