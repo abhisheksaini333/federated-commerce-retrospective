@@ -1533,3 +1533,5 @@ dialog{max-width:min(32rem,90vw);border:1px solid #303c2c;padding:2rem;backgroun
 
 button,select,input:not([type=radio]){min-height:44px}button{min-width:44px}.receipt strong{overflow-wrap:anywhere;max-width:100%}.receipt{min-width:0}main:focus{outline:none}
 @media(max-width:400px){.site-header{gap:8px;padding-left:12px;padding-right:12px}.brand-sub{letter-spacing:1px}.checkout-layout,.bag-layout{min-width:0}.collection-toolbar{flex-wrap:wrap}.receipt{padding:20px}.confirmation{padding-left:18px;padding-right:18px}}
+
+.table-scroll{max-width:100%;overscroll-behavior-x:contain}.table-scroll:focus-visible{outline:3px solid #3b4a31;outline-offset:4px}.table-scroll table{min-width:740px}

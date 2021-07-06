@@ -80,3 +80,8 @@ test('browser history restores views and supports direct order desk links',async
 test('narrow layout keeps controls touchable and long receipt IDs inside the page',async({page})=>{
  await page.setViewportSize({width:320,height:800});await page.goto('/');const add=page.getByRole('button',{name:'Add Everyday notebook'});await expect(add).toBeVisible();const size=await add.boundingBox();expect(size!.height).toBeGreaterThanOrEqual(44);await add.click();await page.getByRole('button',{name:'Bag (1)'}).click();const quantity=await page.getByLabel('Quantity for Everyday notebook').boundingBox();expect(quantity!.height).toBeGreaterThanOrEqual(44);await page.getByRole('button',{name:'Continue to checkout'}).click();await page.getByRole('button',{name:'Place demo order'}).click();await expect(page.getByTestId('order-id')).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
 });
+
+test('narrow order tables expose a named keyboard scroll region',async({page,request})=>{
+ await request.post('/api/checkout',{headers:{'Idempotency-Key':'scroll-region-order'},data:{items:[{productId:'pencil',quantity:1}],customerName:'Scroll Demo',shipping:'standard'}});
+ await page.setViewportSize({width:360,height:800});await page.goto('/?view=admin');const region=page.getByRole('region',{name:'Orders table; scroll horizontally for all columns'});await expect(region).toBeVisible();await region.focus();await expect(region).toBeFocused();await page.keyboard.press('ArrowRight');await expect.poll(()=>region.evaluate(element=>element.scrollLeft)).toBeGreaterThan(0);
+});

@@ -87,7 +87,7 @@ export default function OrderDesk() {
           <p>Place a demo order in the shop and it will appear here.</p>
         </div>
       ) : (
-        <div className="table-scroll">
+        <div className="table-scroll" role="region" aria-label="Orders table; scroll horizontally for all columns" tabIndex={0}>
           <table>
             <caption className="sr-only">Synthetic orders</caption>
             <thead>
