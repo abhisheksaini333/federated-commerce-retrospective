@@ -85,3 +85,7 @@ test('narrow order tables expose a named keyboard scroll region',async({page,req
  await request.post('/api/checkout',{headers:{'Idempotency-Key':'scroll-region-order'},data:{items:[{productId:'pencil',quantity:1}],customerName:'Scroll Demo',shipping:'standard'}});
  await page.setViewportSize({width:360,height:800});await page.goto('/?view=admin');const region=page.getByRole('region',{name:'Orders table; scroll horizontally for all columns'});await expect(region).toBeVisible();await region.focus();await expect(region).toBeFocused();await page.keyboard.press('ArrowRight');await expect.poll(()=>region.evaluate(element=>element.scrollLeft)).toBeGreaterThan(0);
 });
+
+test('forced colors retains explicit control boundaries and keyboard focus',async({page})=>{
+ await page.emulateMedia({forcedColors:'active'});await page.goto('/');const button=page.getByRole('button',{name:'Add Everyday notebook'});await button.focus();await expect(button).toBeFocused();const styles=await button.evaluate(element=>{const s=getComputedStyle(element);return {border:s.borderTopWidth,outline:s.outlineStyle,outlineWidth:s.outlineWidth};});expect(parseFloat(styles.border)).toBeGreaterThanOrEqual(2);expect(styles.outline).not.toBe('none');expect(parseFloat(styles.outlineWidth)).toBeGreaterThanOrEqual(2);
+});
