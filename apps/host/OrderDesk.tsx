@@ -1,9 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
 import { money, type Order } from "../../packages/contracts";
+import OrderDetails from './OrderDetails';
 import {LatestTask} from './latest';
 import { api } from "./api";
 
 export default function OrderDesk() {
+  const [selected,setSelected]=useState<string|null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -24,6 +26,7 @@ export default function OrderDesk() {
     try {
       const { order } = await api<{ order: Order }>(`/api/orders/${id}`, {
         method: "PATCH",
+        headers:{"If-Match":`"order-${orders.find(order=>order.id===id)?.version}"`},
         body: JSON.stringify({ status: "fulfilled" }),
       });
       setOrders((previous) =>
@@ -71,6 +74,7 @@ export default function OrderDesk() {
           </strong>
         </div>
       </div>
+      {selected&&<OrderDetails key={selected} id={selected} onClose={()=>setSelected(null)} onUpdated={order=>setOrders(previous=>previous.map(value=>value.id===order.id?order:value))}/>}
       {error && (
         <div role="alert" className="notice">
           {error}
@@ -104,7 +108,7 @@ export default function OrderDesk() {
               {orders.map((order) => (
                 <tr key={order.id}>
                   <td>
-                    <strong>{order.id}</strong>
+                    <button className="text-button order-reference" aria-label={`View order ${order.id}`} onClick={()=>setSelected(order.id)}>{order.id}</button>
                     <small>
                       {new Date(order.createdAt).toLocaleDateString()}
                     </small>

@@ -1538,3 +1538,5 @@ button,select,input:not([type=radio]){min-height:44px}button{min-width:44px}.rec
 
 @media(forced-colors:active){button[class],.button,input,select,dialog,.status-pill{border:2px solid ButtonText}button:disabled{border-color:GrayText;color:GrayText}.status-pill{background:Canvas;color:CanvasText}a{text-decoration:underline}:focus-visible{outline:3px solid Highlight;outline-offset:3px}.product-art,.hero-scene{border:1px solid CanvasText}}
 @media(prefers-contrast:more){.fine-print,.eyebrow,.product-card p{color:#263328}.notice,.summary-card{border:2px solid currentColor}}
+
+.order-reference{overflow-wrap:anywhere;text-align:left;max-width:28rem}.status-pill.cancelled{background:#f0ddce;color:#642c16}
