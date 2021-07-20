@@ -11,6 +11,7 @@ export function validOrder(value:unknown):boolean {
 export function validApiResponse(url:string,value:unknown):boolean {
  const path=new URL(url,'http://local.invalid').pathname;
  if(path==='/api/products'){if(!record(value)||!Array.isArray(value.products))return false;try{validateCatalog(value.products);return true;}catch{return false;}}
+ if(path==='/api/stats')return record(value)&&cents(value.orders)&&cents(value.activeTotalCents)&&record(value.byStatus)&&['placed','fulfilled','cancelled'].every(key=>cents((value.byStatus as Record<string,unknown>)[key]));
  if(path==='/api/orders')return record(value)&&Array.isArray(value.orders)&&value.orders.every(validOrder);
  if(path==='/api/checkout'||/^\/api\/orders\/[^/]+$/.test(path))return record(value)&&validOrder(value.order);
  return true;

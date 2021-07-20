@@ -52,7 +52,7 @@ test('admin keeps each pending order action disabled independently',async({page,
  let release!:()=>void;const gate=new Promise<void>(resolve=>release=resolve);let held=false;
  await page.route('**/api/orders/*',async route=>{if(!held&&route.request().method()==='PATCH'){held=true;await gate;}await route.continue();});
  await page.goto('/');await page.getByRole('button',{name:'Order desk',exact:true}).click();const first=page.getByRole('row').filter({hasText:'Concurrent One'});const second=page.getByRole('row').filter({hasText:'Concurrent Two'});
- try{await first.getByRole('button',{name:'Mark fulfilled'}).click();await second.getByRole('button',{name:'Mark fulfilled'}).click();await expect(second).toContainText('fulfilled');await expect(first.getByRole('button')).toBeDisabled();}finally{release();}
+ try{await first.getByRole('button',{name:'Mark fulfilled'}).click();await second.getByRole('button',{name:'Mark fulfilled'}).click();await expect(second).toContainText('fulfilled');await expect(first.getByRole('button',{name:'Updating…'})).toBeDisabled();}finally{release();}
  await expect(first).toContainText('fulfilled');
 });
 
@@ -92,4 +92,10 @@ test('forced colors retains explicit control boundaries and keyboard focus',asyn
 
 test('order details require confirmation before cancellation and refresh the row',async({page,request})=>{
  const result=await request.post('/api/checkout',{headers:{'Idempotency-Key':'detail-cancel-order'},data:{items:[{productId:'pencil',quantity:1}],customerName:'Cancel Demo',shipping:'express'}});const {order}=await result.json();await page.goto('/?view=admin');await page.getByRole('button',{name:`View order ${order.id}`}).click();const detail=page.getByRole('region',{name:'Order details'});await expect(detail).toContainText('Express');await detail.getByRole('button',{name:'Cancel order',exact:true}).click();expect((await (await request.get(`/api/orders/${order.id}`)).json()).order.status).toBe('placed');await detail.getByRole('button',{name:'Confirm cancellation'}).click();await expect(page.getByRole('row').filter({hasText:'Cancel Demo'})).toContainText('cancelled');
+});
+
+test('order filters and cursor pages keep global totals visible',async({page,request})=>{
+ const previous=(await (await request.get('/api/stats')).json()).orders;
+ for(let i=0;i<6;i++)await request.post('/api/checkout',{headers:{'Idempotency-Key':`pagination-order-${i}`},data:{items:[{productId:'pencil',quantity:1}],customerName:`Page Demo ${i}`,shipping:'standard'}});
+ await page.goto('/?view=admin');await page.getByLabel('Customer search').fill('Page Demo');await page.getByRole('button',{name:'Apply filters'}).click();await expect(page.getByRole('row')).toHaveCount(6);await expect(page.getByTestId('global-orders')).toHaveText(String(previous+6));await page.getByRole('button',{name:'Next page'}).click();await expect(page.getByRole('row')).toHaveCount(2);await expect(page.getByTestId('global-orders')).toHaveText(String(previous+6));await page.getByLabel('Customer search').fill('Page Demo 3');await page.getByRole('button',{name:'Apply filters'}).click();await expect(page.getByRole('row')).toHaveCount(2);await expect(page.getByRole('row').last()).toContainText('Page Demo 3');await expect(page.getByRole('button',{name:'Next page'})).toBeDisabled();
 });

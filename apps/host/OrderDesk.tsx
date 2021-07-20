@@ -5,6 +5,8 @@ import {LatestTask} from './latest';
 import { api } from "./api";
 
 export default function OrderDesk() {
+  const [query,setQuery]=useState('');const [search,setSearch]=useState('');const [status,setStatus]=useState('');const [after,setAfter]=useState('');const [nextCursor,setNextCursor]=useState<string|null>(null);const [total,setTotal]=useState(0);
+  const [stats,setStats]=useState({orders:0,byStatus:{placed:0,fulfilled:0,cancelled:0},activeTotalCents:0});
   const [selected,setSelected]=useState<string|null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -14,11 +16,12 @@ export default function OrderDesk() {
   async function refresh() {
     setLoading(true);
     setError("");
-    await listRequest.current.run(signal=>api<{orders:Order[]}>('/api/orders',{signal}),data=>setOrders(data.orders),error=>setError((error as Error).message),()=>setLoading(false));
+    const params=new URLSearchParams({limit:'5'});if(search)params.set('q',search);if(status)params.set('status',status);if(after)params.set('after',after);
+    await listRequest.current.run(signal=>Promise.all([api<{orders:Order[];total:number;nextCursor:string|null}>(`/api/orders?${params}`,{signal}),api<typeof stats>('/api/stats',{signal})]),([data,global])=>{setOrders(data.orders);setTotal(data.total);setNextCursor(data.nextCursor);setStats(global);},error=>setError((error as Error).message),()=>setLoading(false));
   }
   useEffect(() => {
     void refresh();return()=>listRequest.current.cancel();
-  }, []);
+  }, [search,status,after]);
   async function fulfill(id: string) {
     listRequest.current.cancel();setLoading(false);
     setBusy(previous=>new Set(previous).add(id));
@@ -29,6 +32,7 @@ export default function OrderDesk() {
         headers:{"If-Match":`"order-${orders.find(order=>order.id===id)?.version}"`},
         body: JSON.stringify({ status: "fulfilled" }),
       });
+      setStats(previous=>({...previous,byStatus:{...previous.byStatus,placed:Math.max(0,previous.byStatus.placed-1),fulfilled:previous.byStatus.fulfilled+1}}));
       setOrders((previous) =>
         previous.map((value) => (value.id === id ? order : value)),
       );
@@ -56,21 +60,23 @@ export default function OrderDesk() {
           Refresh orders
         </button>
       </div>
+      <form className="collection-toolbar" onSubmit={event=>{event.preventDefault();setAfter('');setSearch(query.trim());}}><label>Customer search <input value={query} maxLength={60} onChange={event=>setQuery(event.target.value)}/></label><label>Status <select value={status} disabled={busy.size>0} onChange={event=>{setAfter('');setStatus(event.target.value);}}><option value="">All statuses</option><option value="placed">Placed</option><option value="fulfilled">Fulfilled</option><option value="cancelled">Cancelled</option></select></label><button className="button secondary" disabled={busy.size>0}>Apply filters</button></form>
+      <p role="status">{total} matching orders</p><div><button className="text-button" disabled={!after||loading||busy.size>0} onClick={()=>setAfter('')}>First page</button><button className="text-button" disabled={!nextCursor||loading||busy.size>0} onClick={()=>setAfter(nextCursor!)}>Next page</button></div>
       <div className="desk-stats">
         <div>
           <span>Orders placed</span>
-          <strong>{orders.length}</strong>
+          <strong data-testid="global-orders">{stats.orders}</strong>
         </div>
         <div>
           <span>Awaiting fulfillment</span>
           <strong>
-            {orders.filter((order) => order.status === "placed").length}
+            {stats.byStatus.placed}
           </strong>
         </div>
         <div>
           <span>Demo order value</span>
           <strong>
-            {money(orders.reduce((sum, order) => sum + order.totalCents, 0))}
+            {money(stats.activeTotalCents)}
           </strong>
         </div>
       </div>
