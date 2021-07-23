@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
 import { money, type Order } from "../../packages/contracts";
+import InventoryDesk from './InventoryDesk';
 import OrderDetails from './OrderDetails';
 import {LatestTask} from './latest';
 import { api } from "./api";
 
 export default function OrderDesk() {
+  const [section,setSection]=useState("orders");
   const [query,setQuery]=useState('');const [search,setSearch]=useState('');const [status,setStatus]=useState('');const [after,setAfter]=useState('');const [nextCursor,setNextCursor]=useState<string|null>(null);const [total,setTotal]=useState(0);
   const [stats,setStats]=useState({orders:0,byStatus:{placed:0,fulfilled:0,cancelled:0},activeTotalCents:0});
   const [selected,setSelected]=useState<string|null>(null);
@@ -60,6 +62,8 @@ export default function OrderDesk() {
           Refresh orders
         </button>
       </div>
+      <div role="group" aria-label="Order desk sections"><button className="text-button" aria-pressed={section==='orders'} onClick={()=>setSection('orders')}>Orders</button><button className="text-button" aria-pressed={section==='inventory'} onClick={()=>setSection('inventory')}>Inventory</button></div>
+      {section==='inventory'?<InventoryDesk/>:<>
       <form className="collection-toolbar" onSubmit={event=>{event.preventDefault();setAfter('');setSearch(query.trim());}}><label>Customer search <input value={query} maxLength={60} onChange={event=>setQuery(event.target.value)}/></label><label>Status <select value={status} disabled={busy.size>0} onChange={event=>{setAfter('');setStatus(event.target.value);}}><option value="">All statuses</option><option value="placed">Placed</option><option value="fulfilled">Fulfilled</option><option value="cancelled">Cancelled</option></select></label><button className="button secondary" disabled={busy.size>0}>Apply filters</button></form>
       <p role="status">{total} matching orders</p><div><button className="text-button" disabled={!after||loading||busy.size>0} onClick={()=>setAfter('')}>First page</button><button className="text-button" disabled={!nextCursor||loading||busy.size>0} onClick={()=>setAfter(nextCursor!)}>Next page</button></div>
       <div className="desk-stats">
@@ -150,6 +154,7 @@ export default function OrderDesk() {
           </table>
         </div>
       )}
+      </>}
     </section>
   );
 }

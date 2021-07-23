@@ -1540,3 +1540,5 @@ button,select,input:not([type=radio]){min-height:44px}button{min-width:44px}.rec
 @media(prefers-contrast:more){.fine-print,.eyebrow,.product-card p{color:#263328}.notice,.summary-card{border:2px solid currentColor}}
 
 .order-reference{overflow-wrap:anywhere;text-align:left;max-width:28rem}.status-pill.cancelled{background:#f0ddce;color:#642c16}
+
+.inventory-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:20px;margin-top:24px}.inventory-grid label{display:block;margin:12px 0}.inventory-grid input{width:100%}
