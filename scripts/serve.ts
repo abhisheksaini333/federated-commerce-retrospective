@@ -1,9 +1,10 @@
 import {runtimeConfig, origin} from "./runtime-config";
 import {startRuntime} from "./runtime";
+import {drainServers} from "./runtime-shutdown";
 async function main(){
   const config=runtimeConfig(); const servers=await startRuntime(config);
   let stopping=false;
-  const stop=()=>{if(stopping)return;stopping=true;for(const server of servers)server.close();};
+  const stop=()=>{if(stopping)return;stopping=true;void drainServers(servers,config.shutdownMs);};
   process.once("SIGINT",stop);process.once("SIGTERM",stop);
   console.log(`Fieldwork Supply (${config.variant}): ${origin(config,"host")} | Synthetic local demo.`);
 }
