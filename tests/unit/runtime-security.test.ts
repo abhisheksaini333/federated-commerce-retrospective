@@ -1,0 +1,6 @@
+import test from "node:test";import assert from "node:assert/strict";import express from "express";import http from "node:http";import net from "node:net";
+import {runtimeConfig} from "../../scripts/runtime-config";import {localBoundary} from "../../scripts/runtime-security";
+test("loopback service rejects rebinding hosts and foreign mutation origins",async()=>{
+ const app=express();const server=http.createServer(app);await new Promise<void>(r=>server.listen(0,"127.0.0.1",r));const port=(server.address() as net.AddressInfo).port;const c=runtimeConfig({});c.ports.host=port;app.use(localBoundary(c,port));app.all("/",(_q,s)=>s.json({ok:true}));
+ try {const url=`http://127.0.0.1:${port}`;const rebound=await new Promise<number>(resolve=>http.get(url,{headers:{host:`evil.test:${port}`}},r=>{r.resume();resolve(r.statusCode!);}));assert.equal(rebound,421);assert.equal((await fetch(url,{method:"POST",headers:{origin:"https://evil.test"}})).status,403);assert.equal((await fetch(url,{method:"POST",headers:{origin:url}})).status,200);assert.equal((await fetch(url,{method:"POST"})).status,200);assert.equal((await fetch(url,{method:"POST",headers:{origin:"null"}})).status,403);}finally{server.closeAllConnections();await new Promise<void>(r=>server.close(()=>r()));}
+});
