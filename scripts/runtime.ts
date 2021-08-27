@@ -2,7 +2,7 @@ import express from "express";
 import fs from "node:fs";
 import path from "node:path";
 import http from "node:http";
-import {localBoundary} from "./runtime-security";
+import {localBoundary,staticHeaders} from "./runtime-security";
 import {apiProxy} from "./runtime-proxy";
 import { createApp } from "../apps/api/app";
 import { assetDirectory, origin, type RuntimeConfig } from "./runtime-config";
@@ -13,7 +13,7 @@ export async function startRuntime(config: RuntimeConfig): Promise<http.Server[]
   validateAssets(config);
   const servers: http.Server[] = [];
   const apps = [{name:"api" as const, app:createApp()}, ...(["host","catalog","cart"] as const).map(name=>{
-    const app=express();app.disable("x-powered-by");
+    const app=express();app.disable("x-powered-by");app.use(staticHeaders(config));
     app.use((_req,res,next)=>{res.set("Cache-Control","no-store");res.set("X-Content-Type-Options","nosniff");next();});
     if(name==="host") app.use("/api",apiProxy(config.ports.api,config.apiTimeoutMs));
     app.use(express.static(assetDirectory(config,name)));return {name,app};
