@@ -12,8 +12,8 @@ import { performance as nodePerformance } from "node:perf_hooks";
 import { gzipSync } from "node:zlib";
 import { chromium } from "@playwright/test";
 
-const output = "evidence/performance.json";
-mkdirSync("evidence", { recursive: true });
+import {createRunDirectory,sourceIdentity} from "./benchmark-output";
+import {projectRoot} from "./runtime-config";
 function assets(
   dir: string,
 ): { file: string; bytes: number; gzipBytes: number }[] {
@@ -51,6 +51,9 @@ async function ready(child: ChildProcess) {
   throw new Error("Demo server failed to become ready.");
 }
 async function main() {
+  const outputDirectory=createRunDirectory(process.argv.slice(2));
+  const source=sourceIdentity();
+  const output=path.join(outputDirectory,"performance.json");
   for (const port of [4310, 4311, 4312, 4313]) {
     try {
       await fetch(`http://127.0.0.1:${port}`, {
@@ -76,15 +79,15 @@ async function main() {
         "production",
         ...(variant === "baseline" ? ["--env", "baseline=1"] : []),
       ],
-      { encoding: "utf8" },
+      { encoding: "utf8", cwd:projectRoot },
     );
     writeFileSync(
-      `evidence/build-${variant}.txt`,
+      path.join(outputDirectory,`build-${variant}.txt`),
       result.stdout + result.stderr,
     );
     if (result.status !== 0)
       throw new Error(`${variant} build failed: ${result.stderr}`);
-    const files = assets(`dist/${variant}`);
+    const files = assets(path.join(projectRoot,`dist/${variant}`));
     builds[variant] = {
       wallMs: Math.round(nodePerformance.now() - start),
       assetBytes: files.reduce((sum, file) => sum + file.bytes, 0),
@@ -100,6 +103,7 @@ async function main() {
         process.execPath,
         ["--import", "tsx", "scripts/serve.ts"],
         {
+          cwd:projectRoot,
           env: { ...process.env, BUILD_VARIANT: variant },
           stdio: ["ignore", "pipe", "pipe"],
         },
@@ -185,10 +189,11 @@ async function main() {
         }
       } finally {
         await stop(server);
-        writeFileSync(`evidence/serve-${variant}.txt`, serverLog);
+        writeFileSync(path.join(outputDirectory,`serve-${variant}.txt`), serverLog);
       }
     }
     const report = {
+      source,
       measuredAt: new Date().toISOString(),
       environment: {
         node: process.version,
