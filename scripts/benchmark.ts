@@ -27,30 +27,11 @@ function assets(
     ];
   });
 }
-async function stop(child: ChildProcess) {
-  if (child.exitCode !== null) return;
-  await new Promise<void>((resolve) => {
-    child.once("exit", () => resolve());
-    child.kill("SIGTERM");
-  });
-}
-async function ready(child: ChildProcess) {
-  for (let tries = 0; tries < 80; tries++) {
-    if (child.exitCode !== null)
-      throw new Error(
-        `Demo server exited with ${child.exitCode}; check the ports.`,
-      );
-    try {
-      const response = await fetch("http://127.0.0.1:4310/api/health");
-      if (response.ok) return;
-    } catch {
-      /* startup */
-    }
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-  throw new Error("Demo server failed to become ready.");
-}
+import {stopChild,waitReady} from "./benchmark-lifecycle";
 async function main() {
+  const cancellation=new AbortController();
+  const cancel=()=>cancellation.abort(new Error("Benchmark interrupted"));
+  process.once("SIGINT",cancel);process.once("SIGTERM",cancel);
   const outputDirectory=createRunDirectory(process.argv.slice(2));
   const source=sourceIdentity();
   const output=path.join(outputDirectory,"performance.json");
@@ -110,14 +91,15 @@ async function main() {
       );
       let serverLog = "";
       server.stdout?.on("data", (chunk) => {
-        serverLog += chunk.toString();
+        serverLog = (serverLog + chunk.toString()).slice(-1000000);
       });
       server.stderr?.on("data", (chunk) => {
-        serverLog += chunk.toString();
+        serverLog = (serverLog + chunk.toString()).slice(-1000000);
       });
       try {
-        await ready(server);
+        await waitReady(server,"http://127.0.0.1:4310/api/health",8000,cancellation.signal);
         for (let sample = 1; sample <= 3; sample++) {
+          cancellation.signal.throwIfAborted();
           const context = await browser.newContext({
             viewport: { width: 1440, height: 1050 },
           });
@@ -188,7 +170,7 @@ async function main() {
           await context.close();
         }
       } finally {
-        await stop(server);
+        await stopChild(server);
         writeFileSync(path.join(outputDirectory,`serve-${variant}.txt`), serverLog);
       }
     }
@@ -215,6 +197,7 @@ async function main() {
     );
   } finally {
     await browser.close();
+    process.removeListener("SIGINT",cancel);process.removeListener("SIGTERM",cancel);
   }
 }
 main().catch((error) => {
