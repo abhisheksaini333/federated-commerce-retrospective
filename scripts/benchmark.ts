@@ -1,3 +1,4 @@
+import {sampleCount,sampleSchedule,distribution} from "./benchmark-sampling";
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 import {
   mkdirSync,
@@ -34,6 +35,8 @@ async function main() {
   process.once("SIGINT",cancel);process.once("SIGTERM",cancel);
   const outputDirectory=createRunDirectory(process.argv.slice(2));
   const source=sourceIdentity();
+  const samples=sampleCount(process.argv.slice(2));
+  const schedule=sampleSchedule(samples);
   const output=path.join(outputDirectory,"performance.json");
   for (const port of [4310, 4311, 4312, 4313]) {
     try {
@@ -77,9 +80,9 @@ async function main() {
     };
   }
   const browser = await chromium.launch();
-  const observations: unknown[] = [];
+  const observations: {variant:string;sample:number;catalogReadyMs:number;bagReadyMs:number;[key:string]:unknown}[] = [];
   try {
-    for (const variant of ["baseline", "optimized"]) {
+    for (const {variant,sample} of schedule) {
       const server = spawn(
         process.execPath,
         ["--import", "tsx", "scripts/serve.ts"],
@@ -98,7 +101,7 @@ async function main() {
       });
       try {
         await waitReady(server,"http://127.0.0.1:4310/api/health",8000,cancellation.signal);
-        for (let sample = 1; sample <= 3; sample++) {
+        {
           cancellation.signal.throwIfAborted();
           const context = await browser.newContext({
             viewport: { width: 1440, height: 1050 },
@@ -171,7 +174,7 @@ async function main() {
         }
       } finally {
         await stopChild(server);
-        writeFileSync(path.join(outputDirectory,`serve-${variant}.txt`), serverLog);
+        writeFileSync(path.join(outputDirectory,`serve-${variant}-${sample}.txt`), serverLog);
       }
     }
     const report = {
@@ -186,10 +189,13 @@ async function main() {
         viewport: "1440x1050",
         network:
           "Unthrottled loopback HTTP; no-store; fresh browser context per sample",
-        sampleCountPerVariant: 3,
+        sampleCountPerVariant: samples,
+        order: schedule,
+        warmupSamples: 0,
       },
       builds,
       observations,
+      summaries:Object.fromEntries(["baseline","optimized"].map(variant=>{const rows=observations.filter(row=>row.variant===variant);return [variant,{catalogReadyMs:distribution(rows.map(row=>row.catalogReadyMs)),bagReadyMs:distribution(rows.map(row=>row.bagReadyMs))}];})),
     };
     writeFileSync(output, JSON.stringify(report, null, 2) + "\n");
     console.log(
