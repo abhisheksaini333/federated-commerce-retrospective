@@ -44,3 +44,6 @@ The API requires a bounded `Idempotency-Key`, valid synthetic customer name, rec
 `npm run verify` performs strict typecheck, HTTP tests, production build and Chromium browser checks. CI uses Node 22 on Ubuntu and uploads the browser report/artifacts; a local run does not establish that hosted CI passed. `npm run benchmark` records both bundle variants and six fresh-context page observations. Raw evidence contains actual runtime versions, sample values and resource URLs.
 
 For real deployment, replace the in-memory store with transactional durable storage, implement authorization and CSRF/origin policy, use trusted versioned HTTPS remote manifests and CSP, establish dependency update/rollback controls, and integrate a real provider only under a separate approved scope.
+
+
+Optional administrative capability: set `COMMERCE_ADMIN_TOKEN` to 16–256 URL-safe characters before `npm start`. The order desk prompts for it; the client holds it only in memory and sends it only to administrative API paths. Catalog and synthetic checkout remain public. This loopback capability is a demo access boundary, not an identity provider. API callers use `Authorization: Bearer <capability>`; query parameters never authenticate.

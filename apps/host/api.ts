@@ -5,6 +5,8 @@ export class ApiFailure extends Error {
  constructor(message:string, public readonly status:number | null, public readonly code:string, public readonly issues: {path:string;message:string}[] = []) { super(message); this.name='ApiFailure'; }
 }
 
+let adminCapability="";
+export function setAdminCapability(value:string){adminCapability=value;}
 export interface ApiOptions extends RequestInit { timeoutMs?: number }
 export async function api<T>(
   url: string,
@@ -20,6 +22,7 @@ export async function api<T>(
   const timeout = globalThis.setTimeout(() => controller.abort(), timeoutMs);
   try {
     const headers = new Headers(options.headers);
+    if(adminCapability&&/^\/api\/(orders|inventory|stats|audit|metrics)(?:[/?]|$)/.test(url)&&!headers.has("Authorization"))headers.set("Authorization",`Bearer ${adminCapability}`);
     if (options.body !== undefined && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
     const response = await fetch(url, {
       ...options,

@@ -103,3 +103,8 @@ test('order filters and cursor pages keep global totals visible',async({page,req
 test('inventory count conflicts retain the draft until stock is refreshed',async({page,request})=>{
  await page.goto('/?view=admin');await page.getByRole('button',{name:'Inventory',exact:true}).click();const row=page.getByRole('region',{name:'Inventory for Everyday notebook'});await row.getByLabel('Count').fill('20');await row.getByLabel('Reason').fill('Shelf count');await request.patch('/api/inventory/notebook',{data:{delta:1,reason:'Concurrent count'}});await row.getByRole('button',{name:'Save count'}).click();await expect(page.getByRole('alert')).toContainText('Inventory changed');await expect(row.getByLabel('Count')).toHaveValue('20');await page.getByRole('button',{name:'Refresh inventory'}).click();await expect(row).toContainText('Current stock: 13');await row.getByRole('button',{name:'Save count'}).click();await expect(row).toContainText('Current stock: 20');
 });
+
+test('protected order desk unlock sends a memory-only capability',async({page})=>{
+ await page.route(/\/api\/(orders|stats)(?:\?|$)/,async route=>{if(route.request().headers().authorization!=='Bearer local-capability-demo')await route.fulfill({status:401,json:{code:'ADMIN_REQUIRED',error:'Unlock the order desk.'}});else await route.continue();});
+ await page.goto('/?view=admin');await page.getByLabel('Admin capability').fill('local-capability-demo');await page.getByRole('button',{name:'Unlock order desk'}).click();await expect(page.getByRole('heading',{name:'The order desk.'})).toBeVisible();expect(await page.evaluate(()=>JSON.stringify(sessionStorage))).not.toContain('local-capability-demo');
+});

@@ -1,7 +1,7 @@
 import { validateCatalog } from '../../packages/contracts/catalog';
 import { validateCheckout } from '../../packages/contracts/validation';
 import express, { type ErrorRequestHandler } from "express";
-import { randomUUID } from "node:crypto";
+import { randomUUID, timingSafeEqual } from "node:crypto";
 import { seedProducts } from "./catalog";
 import {
   shippingCents,
@@ -16,9 +16,11 @@ const exactKeys = (value: Record<string, unknown>, keys: string[]) =>
   Object.keys(value).every((key) => keys.includes(key));
 
 /** One isolated in-memory store per app; synchronous mutation is atomic in one Node process. */
-export interface AppOptions { maxAuditEvents?: number; maxOrders?: number; products?: readonly Product[]; now?: () => Date; idFactory?: () => string }
+export interface AppOptions { adminToken?:string; maxAuditEvents?: number; maxOrders?: number; products?: readonly Product[]; now?: () => Date; idFactory?: () => string }
 
 export function createApp(options: AppOptions = {}) {
+  const adminToken=options.adminToken??process.env.COMMERCE_ADMIN_TOKEN;
+  if(adminToken!==undefined&&!/^[A-Za-z0-9_-]{16,256}$/.test(adminToken))throw new RangeError("Admin capability must be 16–256 URL-safe characters.");
   const maxOrders=options.maxOrders??10000;
   if(!Number.isInteger(maxOrders)||maxOrders<1||maxOrders>1000000)throw new RangeError('Store capacity must be a positive bounded integer.');
   validateCatalog(options.products ?? seedProducts);
@@ -40,8 +42,15 @@ export function createApp(options: AppOptions = {}) {
     res.set("X-Content-Type-Options", "nosniff");
     next();
   });
+  app.use((req,res,next)=>{
+    if(adminToken&&/^\/api\/(orders|inventory|stats|audit|metrics)(?:\/|$)/.test(req.path)){
+      const supplied=req.get('Authorization')?.replace(/^Bearer /,'')??'';
+      if(supplied.length!==adminToken.length||!timingSafeEqual(Buffer.from(supplied),Buffer.from(adminToken))){res.set('WWW-Authenticate','Bearer realm="Fieldwork order desk"').status(401).json({code:'ADMIN_REQUIRED',error:'Unlock the order desk with the local admin capability.'});return;}
+    }next();
+  });
+  app.get('/api/session',(_req,res)=>res.json({adminProtected:!!adminToken}));
   app.use((req, res, next) => {
-    if (['POST', 'PATCH', 'PUT'].includes(req.method) && req.path.startsWith('/api/') && !req.is('application/json')) {
+    if (['POST' , 'PATCH', 'PUT'].includes(req.method) && req.path.startsWith('/api/') && !req.is('application/json')) {
       res.status(415).json({ code: 'UNSUPPORTED_MEDIA_TYPE', error: 'Send this request as application/json.' }); return;
     }
     next();
@@ -221,7 +230,7 @@ export function createApp(options: AppOptions = {}) {
   });
   const allowedMethods: [RegExp, string][] = [
     [/^\/api\/inventory\/[^/]+(?:\/count)?$/, 'PATCH'],
-    [/^\/api\/(health|products|orders|stats|audit)$/, 'GET, HEAD'],
+    [/^\/api\/(health|products|orders|stats|audit|session)$/, 'GET, HEAD'],
     [/^\/api\/checkout(?:\/(?:resolve|quote))?$/, 'POST'],
     [/^\/api\/orders\/[^/]+$/, 'GET, HEAD, PATCH'],
   ];

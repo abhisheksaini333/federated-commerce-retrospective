@@ -435,3 +435,12 @@ test("HTTP fixtures isolate application state behind one bounded listener", asyn
  assert.equal(firstResult.body.total,1);assert.equal(secondResult.body.total,0);
  assert.equal(new URL(firstResult.request.url).origin,new URL(secondResult.request.url).origin);
 });
+
+test('optional admin capability protects all administrative reads and writes without leaking the token',async()=>{
+ const token='local-admin-capability-123';const app=createApp({adminToken:token});
+ for(const path of ['/api/orders','/api/stats','/api/audit','/api/orders/export.csv']){const response=await request(app).get(path+'?token='+token);assert.equal(response.status,401);assert.equal(JSON.stringify(response.body).includes(token),false);}
+ assert.equal((await request(app).patch('/api/inventory/notebook').send({delta:1,reason:'unauthorized'})).status,401);
+ assert.equal((await request(app).get('/api/orders').set('Authorization','Bearer '+token)).status,200);
+ assert.equal((await request(app).get('/api/products')).status,200);assert.equal((await checkout(app,'capability-public-checkout')).status,201);
+ assert.throws(()=>createApp({adminToken:'short'}),/capability/);
+});

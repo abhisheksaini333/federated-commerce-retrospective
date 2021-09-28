@@ -3,9 +3,10 @@ import { money, type Order } from "../../packages/contracts";
 import InventoryDesk from './InventoryDesk';
 import OrderDetails from './OrderDetails';
 import {LatestTask} from './latest';
-import { api } from "./api";
+import { api,ApiFailure,setAdminCapability } from "./api";
 
 export default function OrderDesk() {
+  const [locked,setLocked]=useState(false);const [token,setToken]=useState("");
   const [section,setSection]=useState("orders");
   const [query,setQuery]=useState('');const [search,setSearch]=useState('');const [status,setStatus]=useState('');const [after,setAfter]=useState('');const [nextCursor,setNextCursor]=useState<string|null>(null);const [total,setTotal]=useState(0);
   const [stats,setStats]=useState({orders:0,byStatus:{placed:0,fulfilled:0,cancelled:0},activeTotalCents:0});
@@ -19,7 +20,7 @@ export default function OrderDesk() {
     setLoading(true);
     setError("");
     const params=new URLSearchParams({limit:'5'});if(search)params.set('q',search);if(status)params.set('status',status);if(after)params.set('after',after);
-    await listRequest.current.run(signal=>Promise.all([api<{orders:Order[];total:number;nextCursor:string|null}>(`/api/orders?${params}`,{signal}),api<typeof stats>('/api/stats',{signal})]),([data,global])=>{setOrders(data.orders);setTotal(data.total);setNextCursor(data.nextCursor);setStats(global);},error=>setError((error as Error).message),()=>setLoading(false));
+    await listRequest.current.run(signal=>Promise.all([api<{orders:Order[];total:number;nextCursor:string|null}>(`/api/orders?${params}`,{signal}),api<typeof stats>('/api/stats',{signal})]),([data,global])=>{setLocked(false);setOrders(data.orders);setTotal(data.total);setNextCursor(data.nextCursor);setStats(global);},error=>{setLocked(error instanceof ApiFailure&&error.status===401);setError((error as Error).message);},()=>setLoading(false));
   }
   useEffect(() => {
     void refresh();return()=>listRequest.current.cancel();
@@ -44,6 +45,7 @@ export default function OrderDesk() {
       setBusy(previous=>{const next=new Set(previous);next.delete(id);return next;});
     }
   }
+  if(locked)return <section className="page-section"><h1>Unlock the order desk.</h1><p>The operator has enabled a local capability for administrative access.</p>{error&&<p role="alert">{error}</p>}<form onSubmit={event=>{event.preventDefault();setAdminCapability(token);setToken('');void refresh();}}><label>Admin capability <input type="password" autoComplete="off" value={token} onChange={event=>setToken(event.target.value)} required/></label><button className="button" disabled={loading}>Unlock order desk</button></form></section>;
   return (
     <section className="page-section">
       <div className="section-heading">
