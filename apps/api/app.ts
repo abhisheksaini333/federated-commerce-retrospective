@@ -44,8 +44,8 @@ export function createApp(options: AppOptions = {}) {
   });
   app.use((req,res,next)=>{
     if(adminToken&&/^\/api\/(orders|inventory|stats|audit|metrics)(?:\/|$)/.test(req.path)){
-      const supplied=req.get('Authorization')?.replace(/^Bearer /,'')??'';
-      if(supplied.length!==adminToken.length||!timingSafeEqual(Buffer.from(supplied),Buffer.from(adminToken))){res.set('WWW-Authenticate','Bearer realm="Fieldwork order desk"').status(401).json({code:'ADMIN_REQUIRED',error:'Unlock the order desk with the local admin capability.'});return;}
+      const authorization=req.get('Authorization')??'';const supplied=authorization.startsWith('Bearer ')?authorization.slice(7):'';
+      if(Buffer.byteLength(supplied)!==Buffer.byteLength(adminToken)||!timingSafeEqual(Buffer.from(supplied),Buffer.from(adminToken))){res.set('WWW-Authenticate','Bearer realm="Fieldwork order desk"').status(401).json({code:'ADMIN_REQUIRED',error:'Unlock the order desk with the local admin capability.'});return;}
     }next();
   });
   app.get('/api/session',(_req,res)=>res.json({adminProtected:!!adminToken}));

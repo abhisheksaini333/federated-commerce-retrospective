@@ -444,3 +444,9 @@ test('optional admin capability protects all administrative reads and writes wit
  assert.equal((await request(app).get('/api/products')).status,200);assert.equal((await checkout(app,'capability-public-checkout')).status,201);
  assert.throws(()=>createApp({adminToken:'short'}),/capability/);
 });
+
+test('admin authorization requires the Bearer scheme and rejects multibyte credentials safely',async()=>{
+ const token='test-capability-1234';const app=createApp({adminToken:token});
+ assert.equal((await request(app).get('/api/orders').set('Authorization',token)).status,401);
+ assert.equal((await request(app).get('/api/orders').set('Authorization','Bearer '+'é'.repeat(token.length))).status,401);
+});
