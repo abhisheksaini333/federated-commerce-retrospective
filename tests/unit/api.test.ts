@@ -450,3 +450,12 @@ test('admin authorization requires the Bearer scheme and rejects multibyte crede
  assert.equal((await request(app).get('/api/orders').set('Authorization',token)).status,401);
  assert.equal((await request(app).get('/api/orders').set('Authorization','Bearer '+'é'.repeat(token.length))).status,401);
 });
+
+test('mutation rate budgets recover at their deadline while accepted checkout retries remain available',async()=>{
+ let clock=1000;const app=createApp({now:()=>new Date(clock),rateLimit:{limit:1,windowMs:2000}});
+ const first=await checkout(app,'limited-original');assert.equal(first.status,201);
+ const denied=await checkout(app,'limited-next-key');assert.equal(denied.status,429);assert.equal(denied.headers['retry-after'],'2');assert.equal((await checkout(app,'limited-original')).status,200);
+ assert.equal((await request(app).patch('/api/inventory/notebook').send({delta:1,reason:'independent admin budget'})).status,200);
+ clock=3000;assert.equal((await checkout(app,'limited-next-key')).status,201);
+ assert.throws(()=>createApp({rateLimit:{limit:0,windowMs:2000}}),/rate/i);
+});

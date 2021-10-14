@@ -16,9 +16,12 @@ const exactKeys = (value: Record<string, unknown>, keys: string[]) =>
   Object.keys(value).every((key) => keys.includes(key));
 
 /** One isolated in-memory store per app; synchronous mutation is atomic in one Node process. */
-export interface AppOptions { adminToken?:string; maxAuditEvents?: number; maxOrders?: number; products?: readonly Product[]; now?: () => Date; idFactory?: () => string }
+export interface AppOptions { rateLimit?:{limit:number;windowMs:number}; adminToken?:string; maxAuditEvents?: number; maxOrders?: number; products?: readonly Product[]; now?: () => Date; idFactory?: () => string }
 
 export function createApp(options: AppOptions = {}) {
+  const rate=options.rateLimit??{limit:200,windowMs:60000};
+  if(!Number.isInteger(rate.limit)||rate.limit<1||rate.limit>100000||!Number.isInteger(rate.windowMs)||rate.windowMs<1||rate.windowMs>3600000)throw new RangeError("Invalid mutation rate budget.");
+  const budgets=new Map<string,{used:number;expiresAt:number}>();
   const adminToken=options.adminToken??process.env.COMMERCE_ADMIN_TOKEN;
   if(adminToken!==undefined&&!/^[A-Za-z0-9_-]{16,256}$/.test(adminToken))throw new RangeError("Admin capability must be 16–256 URL-safe characters.");
   const maxOrders=options.maxOrders??10000;
@@ -54,6 +57,14 @@ export function createApp(options: AppOptions = {}) {
       res.status(415).json({ code: 'UNSUPPORTED_MEDIA_TYPE', error: 'Send this request as application/json.' }); return;
     }
     next();
+  });
+  app.use((req,res,next)=>{
+    if(!['POST','PATCH','PUT','DELETE'].includes(req.method)||req.path==='/api/checkout/resolve'||req.path==='/api/checkout/quote'){next();return;}
+    if(req.path==='/api/checkout'&&receipts.has(req.get('Idempotency-Key')??'')){next();return;}
+    const time=now().getTime();for(const [key,budget] of budgets)if(budget.expiresAt<=time)budgets.delete(key);
+    const key=`${req.socket.remoteAddress}:${req.path==='/api/checkout'?'checkout':'admin'}`;let budget=budgets.get(key);
+    if(!budget){if(budgets.size>=2000){res.set('Retry-After','1').status(429).json({code:'RATE_LIMITED',error:'The demo is busy. Try again shortly.'});return;}budget={used:0,expiresAt:time+rate.windowMs};budgets.set(key,budget);}
+    if(budget.used>=rate.limit){res.set('Retry-After',String(Math.max(1,Math.ceil((budget.expiresAt-time)/1000)))).status(429).json({code:'RATE_LIMITED',error:'Too many changes at once. Wait briefly and retry.'});return;}budget.used++;next();
   });
   app.use(express.json({ limit: "16kb" }));
   app.get("/api/health", (_req, res) =>
