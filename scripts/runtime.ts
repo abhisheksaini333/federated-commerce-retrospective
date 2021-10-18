@@ -15,6 +15,7 @@ export async function startRuntime(config: RuntimeConfig): Promise<http.Server[]
   const apps = [{name:"api" as const, app:createApp()}, ...(["host","catalog","cart"] as const).map(name=>{
     const app=express();app.disable("x-powered-by");app.use(staticHeaders(config));
     app.use((_req,res,next)=>{res.set("Cache-Control","no-store");res.set("X-Content-Type-Options","nosniff");next();});
+    if(name==="host")app.get("/runtime-config.js",(_req,res)=>res.type("application/javascript").send(`window.FIELDWORK_CONFIG=${JSON.stringify({version:1,remotes:{catalog:origin(config,"catalog")+"/remoteEntry.js",cart:origin(config,"cart")+"/remoteEntry.js"}})};`));
     if(name==="host") app.use("/api",apiProxy(config.ports.api,config.apiTimeoutMs));
     app.use(express.static(assetDirectory(config,name)));return {name,app};
   })];

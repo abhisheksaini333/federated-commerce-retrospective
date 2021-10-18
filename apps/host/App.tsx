@@ -1,12 +1,15 @@
 import {validOrder} from '../../packages/contracts/responses';
 import {checkoutIntent,readDraft,readPending} from './checkout';
 import {LatestTask} from './latest';
+import {loadFederated} from './federation';
 import {storage} from './storage';
 import {normalizeCart,serializeCart,updateCart,restoreRemoved,RemovedLine} from '../../packages/cart';
 import React, { Suspense, lazy, useEffect, useState, useRef } from "react";
 import {
   type CartItem,
   type CatalogFilters,
+  type CatalogProps,
+  type CartProps,
   type CheckoutRequest,
   type Order,
   type Product,
@@ -19,8 +22,8 @@ import { api,ApiFailure } from "./api";
 import { RemoteBoundary } from "./RemoteBoundary";
 import OrderDesk from "./OrderDesk";
 
-const Catalog = lazy(() => import("catalog/Catalog"));
-const Cart = lazy(() => import("cart/Cart"));
+const Catalog = lazy(() => loadFederated<CatalogProps>("catalog","./Catalog"));
+const Cart = lazy(() => loadFederated<CartProps>("cart","./Cart"));
 import {View,routeView,viewUrl} from "./navigation";
 function readReceipt():Order|null {try{const value=JSON.parse(storage.get('receipt')||'null');return validOrder(value)?value:null;}catch{return null;}}
 function readCart(): CartItem[] {

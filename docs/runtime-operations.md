@@ -11,3 +11,5 @@ Generate full webpack JSON statistics and run `node node_modules/tsx/dist/cli.mj
 ## Benchmark runs
 
 Use `npm run benchmark -- --output /absolute/path/to/a/new/run --samples 5`. The output directory must not already exist. Existing evidence is preserved. Each report includes the source commit and dirty state, environment, full raw samples, per-variant min/max/mean/median/p95 and the exact sample order. Samples alternate which variant runs first; each launches a clean server and browser context. There is no warmup exclusion. This is unthrottled local-browser evidence, not a production latency or statistical-significance claim. Keep hardware load comparable between runs. Request readiness and child termination are bounded; partial build/server logs remain in the run directory when a run fails.
+
+The host serves `/runtime-config.js` with the configured catalog/cart origins. The federation loader accepts only HTTP loopback remote entries at `/remoteEntry.js`, initializes the shared React scope once per container, and follows configured ports without rebuilding the host. No external remote registry is used.

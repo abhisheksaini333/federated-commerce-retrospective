@@ -53,10 +53,6 @@ module.exports = (env = {}, argv = {}) => {
         new ModuleFederationPlugin({
           name: "host",
           shared,
-          remotes: {
-            catalog: "catalog@http://127.0.0.1:4311/remoteEntry.js",
-            cart: "cart@http://127.0.0.1:4312/remoteEntry.js",
-          },
         }),
         new webpack.DefinePlugin({ __EAGER_CART__: JSON.stringify(baseline) }),
         new HtmlWebpackPlugin({
