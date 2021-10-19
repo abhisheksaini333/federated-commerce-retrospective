@@ -4,7 +4,7 @@ import {LatestTask} from './latest';
 import {loadFederated} from './federation';
 import {storage} from './storage';
 import {normalizeCart,serializeCart,updateCart,restoreRemoved,RemovedLine} from '../../packages/cart';
-import React, { Suspense, lazy, useEffect, useState, useRef } from "react";
+import React, { Suspense, lazy, useEffect, useState, useRef, useMemo } from "react";
 import {
   type CartItem,
   type CatalogFilters,
@@ -22,8 +22,6 @@ import { api,ApiFailure } from "./api";
 import { RemoteBoundary } from "./RemoteBoundary";
 import OrderDesk from "./OrderDesk";
 
-const Catalog = lazy(() => loadFederated<CatalogProps>("catalog","./Catalog"));
-const Cart = lazy(() => loadFederated<CartProps>("cart","./Cart"));
 import {View,routeView,viewUrl} from "./navigation";
 function readReceipt():Order|null {try{const value=JSON.parse(storage.get('receipt')||'null');return validOrder(value)?value:null;}catch{return null;}}
 function readCart(): CartItem[] {
@@ -53,6 +51,9 @@ function Recovery({
 }
 
 export default function App() {
+  const [catalogAttempt,setCatalogAttempt]=useState(0);const [cartAttempt,setCartAttempt]=useState(0);
+  const Catalog=useMemo(()=>lazy(()=>loadFederated<CatalogProps>('catalog','./Catalog')),[catalogAttempt]);
+  const Cart=useMemo(()=>lazy(()=>loadFederated<CartProps>('cart','./Cart')),[cartAttempt]);
   const [receiptInitial]=useState(readReceipt);
   const [pendingInitial]=useState(()=>readPending(storage.get("checkout")));
   const [pending,setPending]=useState(pendingInitial);
@@ -179,7 +180,7 @@ export default function App() {
     <Recovery
       title="The collection is taking a moment."
       action="Reload collection"
-      onAction={() => window.location.reload()}
+      onAction={() => setCatalogAttempt(value=>value+1)}
     >
       The shop display could not load. You can still open your saved bag or
       visit the order desk.
@@ -189,7 +190,7 @@ export default function App() {
     <Recovery
       title="Your bag is saved."
       action="Reload bag"
-      onAction={() => window.location.reload()}
+      onAction={() => setCartAttempt(value=>value+1)}
     >
       {count} {count === 1 ? "item" : "items"} · {money(subtotal)}
       <br />
@@ -312,7 +313,7 @@ export default function App() {
                 Getting the good things ready…
               </div>
             ) : (
-              <RemoteBoundary fallback={catalogFallback}>
+              <RemoteBoundary key={catalogAttempt} fallback={catalogFallback}>
                 <Suspense
                   fallback={
                     <div className="loading" role="status">
@@ -353,7 +354,7 @@ export default function App() {
               {error}
             </Recovery>
           ) : (
-            <RemoteBoundary fallback={cartFallback}>
+            <RemoteBoundary key={cartAttempt} fallback={cartFallback}>
               <Suspense
                 fallback={
                   <div className="loading" role="status">

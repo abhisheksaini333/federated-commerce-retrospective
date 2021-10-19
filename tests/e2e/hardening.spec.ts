@@ -108,3 +108,7 @@ test('protected order desk unlock sends a memory-only capability',async({page})=
  await page.route(/\/api\/(orders|stats)(?:\?|$)/,async route=>{if(route.request().headers().authorization!=='Bearer local-capability-demo')await route.fulfill({status:401,json:{code:'ADMIN_REQUIRED',error:'Unlock the order desk.'}});else await route.continue();});
  await page.goto('/?view=admin');await page.getByLabel('Admin capability').fill('local-capability-demo');await page.getByRole('button',{name:'Unlock order desk'}).click();await expect(page.getByRole('heading',{name:'The order desk.'})).toBeVisible();expect(await page.evaluate(()=>JSON.stringify(sessionStorage))).not.toContain('local-capability-demo');
 });
+
+test('failed collection retries in place without reloading the host document',async({page})=>{
+ let navigations=0;page.on('framenavigated',frame=>{if(frame===page.mainFrame())navigations++;});await page.route('http://127.0.0.1:4311/**',route=>route.abort());await page.goto('/');await expect(page.getByRole('heading',{name:'The collection is taking a moment.'})).toBeVisible();await page.unroute('http://127.0.0.1:4311/**');await page.getByRole('button',{name:'Reload collection'}).click();await expect(page.getByRole('button',{name:'Add Everyday notebook'})).toBeVisible();expect(navigations).toBe(1);
+});
