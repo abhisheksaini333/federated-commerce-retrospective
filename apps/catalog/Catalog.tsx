@@ -109,3 +109,5 @@ export default function Catalog({ products, onAdd,filters,onFilters }: CatalogPr
     </section>
   );
 }
+
+export const contractVersion=1;

@@ -5,3 +5,9 @@ test('runtime remote configuration accepts declared loopback entries and rejects
  for(const value of ['https://example.com/remoteEntry.js','http://user:pass@127.0.0.1:4511/remoteEntry.js','http://127.0.0.1:4511/other.js','javascript:alert(1)'])assert.throws(()=>remoteConfiguration({...config,remotes:{...config.remotes,catalog:value}}));
  assert.throws(()=>remoteConfiguration({...config,version:2}));
 });
+
+import {validateRemoteModule} from '../../apps/host/federation-config';
+test('remote modules must advertise the compatible component contract',()=>{
+ const component=()=>null;assert.equal(validateRemoteModule({contractVersion:1,default:component}).default,component);
+ for(const value of [{contractVersion:2,default:component},{contractVersion:1,default:{}},null])assert.throws(()=>validateRemoteModule(value),/compatible/);
+});

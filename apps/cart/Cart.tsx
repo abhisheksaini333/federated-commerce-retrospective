@@ -107,3 +107,5 @@ export default function Cart({
     </section>
   );
 }
+
+export const contractVersion=1;

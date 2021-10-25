@@ -112,3 +112,7 @@ test('protected order desk unlock sends a memory-only capability',async({page})=
 test('failed collection retries in place without reloading the host document',async({page})=>{
  let navigations=0;page.on('framenavigated',frame=>{if(frame===page.mainFrame())navigations++;});await page.route('http://127.0.0.1:4311/**',route=>route.abort());await page.goto('/');await expect(page.getByRole('heading',{name:'The collection is taking a moment.'})).toBeVisible();await page.unroute('http://127.0.0.1:4311/**');await page.getByRole('button',{name:'Reload collection'}).click();await expect(page.getByRole('button',{name:'Add Everyday notebook'})).toBeVisible();expect(navigations).toBe(1);
 });
+
+test('incompatible remote export shows recovery and accepts a corrected entry',async({page})=>{
+ await page.route('http://127.0.0.1:4311/remoteEntry.js',route=>route.fulfill({contentType:'application/javascript',body:'window.catalog={init:function(){},get:function(){return Promise.resolve(function(){return {contractVersion:99,default:function(){return null}}})}};'}));await page.goto('/');await expect(page.getByRole('heading',{name:'The collection is taking a moment.'})).toBeVisible();await page.unroute('http://127.0.0.1:4311/remoteEntry.js');await page.getByRole('button',{name:'Reload collection'}).click();await expect(page.getByRole('button',{name:'Add Everyday notebook'})).toBeVisible();
+});

@@ -1,4 +1,4 @@
-import type {ComponentType} from 'react';import {remoteConfiguration,RemoteName} from './federation-config';
+import type {ComponentType} from 'react';import {remoteConfiguration,RemoteName,validateRemoteModule} from './federation-config';
 declare const __webpack_init_sharing__:(scope:string)=>Promise<void>;
 declare const __webpack_share_scopes__:Record<string,unknown>;
 interface Container {init:(scope:unknown)=>Promise<void>|void;get:(name:string)=>Promise<()=>unknown>}
@@ -15,5 +15,7 @@ function container(name:RemoteName):Promise<Container>{
 export async function loadFederated<P>(name:RemoteName,module:string):Promise<{default:ComponentType<P>}>{
  await __webpack_init_sharing__('default');const remote=await container(name);let ready=initialized.get(remote);
  if(!ready){ready=Promise.resolve().then(()=>remote.init(__webpack_share_scopes__.default));initialized.set(remote,ready);ready.catch(()=>initialized.delete(remote));}
- await ready;return (await remote.get(module))() as {default:ComponentType<P>};
+ await ready;
+ try{return validateRemoteModule((await remote.get(module))()) as {default:ComponentType<P>};}
+ catch(error){containers.delete(name);delete (window as unknown as Record<string,unknown>)[name];throw error;}
 }
