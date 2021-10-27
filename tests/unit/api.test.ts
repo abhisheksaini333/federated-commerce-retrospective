@@ -459,3 +459,10 @@ test('mutation rate budgets recover at their deadline while accepted checkout re
  clock=3000;assert.equal((await checkout(app,'limited-next-key')).status,201);
  assert.throws(()=>createApp({rateLimit:{limit:0,windowMs:2000}}),/rate/i);
 });
+
+test('case variants cannot bypass administrative route protection',async()=>{
+ const app=createApp({adminToken:'local-case-sensitive-token'});
+ for(const path of ['/api/Orders','/API/orders','/api/ORDERS/export.csv'])assert.equal((await request(app).get(path)).status,404);
+ assert.equal((await request(app).patch('/api/Inventory/notebook').send({delta:1,reason:'bypass attempt'})).status,404);
+ assert.equal((await request(app).get('/api/products')).body.products[0].stock,12);
+});

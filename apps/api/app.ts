@@ -28,6 +28,7 @@ export function createApp(options: AppOptions = {}) {
   if(!Number.isInteger(maxOrders)||maxOrders<1||maxOrders>1000000)throw new RangeError('Store capacity must be a positive bounded integer.');
   validateCatalog(options.products ?? seedProducts);
   const app = express();
+  app.enable("case sensitive routing");
   const products = (options.products ?? seedProducts).map((product) => ({ ...product }));
   const now = options.now ?? (() => new Date());
   const idFactory = options.idFactory ?? (() => `FW-${randomUUID().toUpperCase()}`);
