@@ -140,7 +140,7 @@ export default function App() {
   }
   async function placeOrder(event: React.FormEvent) {
     event.preventDefault();
-    if (placing || items.length === 0 || items.some(item=>item.quantity>(products.find(p=>p.id===item.productId)?.stock??0))) return;
+    if (placing || items.length === 0 || (!pending&&items.some(item=>item.quantity>(products.find(p=>p.id===item.productId)?.stock??0)))) return;
     setPlacing(true);
     setNameError("");
     setCheckoutError("");
@@ -161,7 +161,7 @@ export default function App() {
       });
       acceptOrder(result.order);
     } catch (error) {
-      if(error instanceof ApiFailure && error.status && error.status<500){setPending(null);storage.set("checkout","null");}
+      if(error instanceof ApiFailure && error.status && error.status>=400 && error.status<500 && error.code!=="INVALID_RESPONSE"){setPending(null);storage.set("checkout","null");}
       if(error instanceof ApiFailure){const field=error.issues.find(issue=>issue.path==='customerName');if(field){setNameError(field.message);setTimeout(()=>document.getElementById('demo-name')?.focus(),0);}}
       setCheckoutError((error as Error).message);
     } finally {
