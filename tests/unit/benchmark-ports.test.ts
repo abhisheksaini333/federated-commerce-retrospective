@@ -1,0 +1,7 @@
+import test from "node:test";import assert from "node:assert/strict";import http from "node:http";import net from "node:net";import {spawn} from "node:child_process";import fs from "node:fs";import os from "node:os";import path from "node:path";import {projectRoot} from "../../scripts/runtime-config";
+test("benchmark probes the configured host before building or starting children",async()=>{
+ const server=http.createServer((_q,s)=>s.end("occupied"));await new Promise<void>(r=>server.listen(0,"127.0.0.1",r));const port=(server.address() as net.AddressInfo).port;const root=fs.mkdtempSync(path.join(os.tmpdir(),"benchmark-ports-"));
+ const child=spawn(process.execPath,[path.join(projectRoot,"node_modules/tsx/dist/cli.mjs"),path.join(projectRoot,"scripts/benchmark.ts"),"--output",path.join(root,"run")],{cwd:root,env:{...process.env,COMMERCE_HOST_PORT:String(port)},stdio:["ignore","pipe","pipe"]});let output="";child.stdout!.on("data",x=>output+=x);child.stderr!.on("data",x=>output+=x);
+ const timer=setTimeout(()=>child.kill("SIGKILL"),5000);
+ try{const code=await new Promise<number|null>((resolve,reject)=>{child.once("error",reject);child.once("exit",resolve);});assert.equal(code,1,output);assert.match(output,new RegExp(`Port ${port} is occupied`));assert.ok(!fs.existsSync(path.join(root,"run","build-baseline.txt")));}finally{clearTimeout(timer);server.closeAllConnections();await new Promise<void>(r=>server.close(()=>r()));fs.rmSync(root,{recursive:true,force:true});}
+});

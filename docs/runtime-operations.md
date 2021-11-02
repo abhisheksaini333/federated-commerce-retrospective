@@ -6,7 +6,7 @@ Shutdown drains accepted requests for `COMMERCE_SHUTDOWN_MS` (default 5000, maxi
 
 Run `node node_modules/tsx/dist/cli.mjs scripts/release-smoke.ts` after building. It starts the actual server from a new temporary working directory and checks both federated views with Chromium. Stop other servers on the configured ports first. The smoke command closes its child process and browser even on failure.
 
-Generate full webpack JSON statistics and run `node node_modules/tsx/dist/cli.mjs scripts/check-build.ts <statistics.json>` to enforce 250000-byte individual deployable assets and 600000-byte aggregate container budgets. All three containers must be present. Source maps are excluded. Incomplete, duplicate, errored or oversized statistics fail the gate.
+Generate full webpack JSON statistics with `node node_modules/webpack-cli/bin/cli.js --config webpack.config.cjs --mode production --stats normal --json /absolute/path/stats.json` and run `node node_modules/tsx/dist/cli.mjs scripts/check-build.ts <statistics.json>` to enforce 250000-byte individual deployable assets and 600000-byte aggregate container budgets. All three containers must be present. Source maps are excluded. Incomplete, duplicate, errored or oversized statistics fail the gate.
 
 ## Benchmark runs
 

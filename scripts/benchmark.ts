@@ -14,7 +14,7 @@ import { gzipSync } from "node:zlib";
 import { chromium } from "@playwright/test";
 
 import {createRunDirectory,sourceIdentity} from "./benchmark-output";
-import {projectRoot} from "./runtime-config";
+import {projectRoot,runtimeConfig,origin} from "./runtime-config";
 function assets(
   dir: string,
 ): { file: string; bytes: number; gzipBytes: number }[] {
@@ -35,10 +35,11 @@ async function main() {
   process.once("SIGINT",cancel);process.once("SIGTERM",cancel);
   const outputDirectory=createRunDirectory(process.argv.slice(2));
   const source=sourceIdentity();
+  const config=runtimeConfig();
   const samples=sampleCount(process.argv.slice(2));
   const schedule=sampleSchedule(samples);
   const output=path.join(outputDirectory,"performance.json");
-  for (const port of [4310, 4311, 4312, 4313]) {
+  for (const port of Object.values(config.ports)) {
     try {
       await fetch(`http://127.0.0.1:${port}`, {
         signal: AbortSignal.timeout(300),
@@ -100,7 +101,7 @@ async function main() {
         serverLog = (serverLog + chunk.toString()).slice(-1000000);
       });
       try {
-        await waitReady(server,"http://127.0.0.1:4310/api/health",8000,cancellation.signal);
+        await waitReady(server,origin(config,"host")+"/api/health",8000,cancellation.signal);
         {
           cancellation.signal.throwIfAborted();
           const context = await browser.newContext({
@@ -118,7 +119,7 @@ async function main() {
             }).observe({ type: "largest-contentful-paint", buffered: true });
           });
           const start = nodePerformance.now();
-          await page.goto("http://127.0.0.1:4310");
+          await page.goto(origin(config,"host"));
           await page
             .getByRole("button", { name: "Add Everyday notebook" })
             .waitFor();
