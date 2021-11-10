@@ -49,3 +49,5 @@ For real deployment, replace the in-memory store with transactional durable stor
 Optional administrative capability: set `COMMERCE_ADMIN_TOKEN` to 16–256 URL-safe characters before `npm start`. The order desk prompts for it; the client holds it only in memory and sends it only to administrative API paths. Catalog and synthetic checkout remain public. This loopback capability is a demo access boundary, not an identity provider. API callers use `Authorization: Bearer <capability>`; query parameters never authenticate.
 
 Mutation budgets default to 200 attempts per minute for each local client and operation group (checkout or administration). A `429 RATE_LIMITED` response includes `Retry-After` seconds. Accepted checkout replay and receipt resolution stay available during a checkout budget limit.
+
+Set `COMMERCE_REQUEST_LOGS=1` for structured request completion logs. Records contain a bounded correlation ID, normalized route template, method, status, and duration. Names, request bodies, query strings, capability tokens and checkout keys are excluded. `X-Request-Id` is echoed when it matches the bounded identifier contract; otherwise the API creates one.

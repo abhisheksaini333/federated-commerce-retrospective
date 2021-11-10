@@ -466,3 +466,11 @@ test('case variants cannot bypass administrative route protection',async()=>{
  assert.equal((await request(app).patch('/api/Inventory/notebook').send({delta:1,reason:'bypass attempt'})).status,404);
  assert.equal((await request(app).get('/api/products')).body.products[0].stock,12);
 });
+
+test('request logs preserve correlation without recording names credentials or query strings',async()=>{
+ const logs:any[]=[];const app=createApp({log:event=>logs.push(event)});
+ const response=await checkout(app,'private-checkout-key',{...body,customerName:'Private Customer'}).set('X-Request-Id','trace-safe-123');assert.equal(response.headers['x-request-id'],'trace-safe-123');
+ await request(app).get('/api/orders?q=Private%20Customer').set('Authorization','Bearer private-credential');
+ assert.equal(logs.length,2);assert.equal(logs[0].requestId,'trace-safe-123');assert.equal(logs[0].route,'/api/checkout');assert.ok(logs[0].durationMs>=0);
+ const text=JSON.stringify(logs);for(const secret of ['Private Customer','private-checkout-key','private-credential','?q='])assert.equal(text.includes(secret),false);
+});

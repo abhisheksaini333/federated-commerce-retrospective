@@ -1,3 +1,4 @@
+import {requestLogging,RequestLog} from './observability';
 import { validateCatalog } from '../../packages/contracts/catalog';
 import { validateCheckout } from '../../packages/contracts/validation';
 import express, { type ErrorRequestHandler } from "express";
@@ -16,7 +17,7 @@ const exactKeys = (value: Record<string, unknown>, keys: string[]) =>
   Object.keys(value).every((key) => keys.includes(key));
 
 /** One isolated in-memory store per app; synchronous mutation is atomic in one Node process. */
-export interface AppOptions { rateLimit?:{limit:number;windowMs:number}; adminToken?:string; maxAuditEvents?: number; maxOrders?: number; products?: readonly Product[]; now?: () => Date; idFactory?: () => string }
+export interface AppOptions { log?:(event:RequestLog)=>void; rateLimit?:{limit:number;windowMs:number}; adminToken?:string; maxAuditEvents?: number; maxOrders?: number; products?: readonly Product[]; now?: () => Date; idFactory?: () => string }
 
 export function createApp(options: AppOptions = {}) {
   const rate=options.rateLimit??{limit:200,windowMs:60000};
@@ -41,6 +42,7 @@ export function createApp(options: AppOptions = {}) {
   const orders = new Map<string, Order>();
   const receipts = new Map<string, { fingerprint: string; order: Order }>();
   app.disable("x-powered-by");
+  app.use(requestLogging(options.log));
   app.use((_req, res, next) => {
     res.set("Cache-Control", "no-store");
     res.set("X-Content-Type-Options", "nosniff");
