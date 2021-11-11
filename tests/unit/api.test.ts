@@ -474,3 +474,10 @@ test('request logs preserve correlation without recording names credentials or q
  assert.equal(logs.length,2);assert.equal(logs[0].requestId,'trace-safe-123');assert.equal(logs[0].route,'/api/checkout');assert.ok(logs[0].durationMs>=0);
  const text=JSON.stringify(logs);for(const secret of ['Private Customer','private-checkout-key','private-credential','?q='])assert.equal(text.includes(secret),false);
 });
+
+test('metrics aggregate bounded request and checkout outcomes without per-customer labels',async()=>{
+ const app=createApp();await request(app).get('/api/health');await checkout(app,'metrics-original');await checkout(app,'metrics-original');await checkout(app,'metrics-rejected',{...body,items:[]});
+ const snapshot=(await request(app).get('/api/metrics')).body;
+ assert.equal(snapshot.requests,4);assert.deepEqual(snapshot.checkout,{created:1,replayed:1,rejected:1});assert.equal(snapshot.statusClasses['4xx'],1);assert.ok(snapshot.latency.sumMs>=0);assert.equal(Object.keys(snapshot.latency.buckets).length,5);
+ for(let i=0;i<12;i++)await request(app).get('/unknown-'+i+'?customer=secret');const next=(await request(app).get('/api/metrics')).body;assert.deepEqual(Object.keys(next),Object.keys(snapshot));assert.equal(JSON.stringify(next).includes('secret'),false);
+});

@@ -1,4 +1,4 @@
-import {requestLogging,RequestLog} from './observability';
+import {requestLogging,RequestLog,RequestMetrics} from './observability';
 import { validateCatalog } from '../../packages/contracts/catalog';
 import { validateCheckout } from '../../packages/contracts/validation';
 import express, { type ErrorRequestHandler } from "express";
@@ -42,7 +42,8 @@ export function createApp(options: AppOptions = {}) {
   const orders = new Map<string, Order>();
   const receipts = new Map<string, { fingerprint: string; order: Order }>();
   app.disable("x-powered-by");
-  app.use(requestLogging(options.log));
+  const metrics=new RequestMetrics();
+  app.use(requestLogging(options.log,metrics));
   app.use((_req, res, next) => {
     res.set("Cache-Control", "no-store");
     res.set("X-Content-Type-Options", "nosniff");
@@ -74,6 +75,7 @@ export function createApp(options: AppOptions = {}) {
     res.json({ status: "ok", mode: "synthetic-local-demo" }),
   );
   app.get("/api/products", (_req, res) => res.set('ETag', `"inventory-${inventoryRevision}"`).json({ products, revision: inventoryRevision }));
+  app.get('/api/metrics',(_req,res)=>res.json(metrics.snapshot()));
   app.get('/api/audit',(_req,res)=>res.json({events:[...events].reverse()}));
   app.get('/api/stats',(_req,res)=>{
     const values=[...orders.values()];
@@ -244,7 +246,7 @@ export function createApp(options: AppOptions = {}) {
   });
   const allowedMethods: [RegExp, string][] = [
     [/^\/api\/inventory\/[^/]+(?:\/count)?$/, 'PATCH'],
-    [/^\/api\/(health|products|orders|stats|audit|session)$/, 'GET, HEAD'],
+    [/^\/api\/(health|products|orders|stats|audit|session|metrics)$/, 'GET, HEAD'],
     [/^\/api\/checkout(?:\/(?:resolve|quote))?$/, 'POST'],
     [/^\/api\/orders\/[^/]+$/, 'GET, HEAD, PATCH'],
   ];

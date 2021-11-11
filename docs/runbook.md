@@ -51,3 +51,5 @@ Optional administrative capability: set `COMMERCE_ADMIN_TOKEN` to 16–256 URL-s
 Mutation budgets default to 200 attempts per minute for each local client and operation group (checkout or administration). A `429 RATE_LIMITED` response includes `Retry-After` seconds. Accepted checkout replay and receipt resolution stay available during a checkout budget limit.
 
 Set `COMMERCE_REQUEST_LOGS=1` for structured request completion logs. Records contain a bounded correlation ID, normalized route template, method, status, and duration. Names, request bodies, query strings, capability tokens and checkout keys are excluded. `X-Request-Id` is echoed when it matches the bounded identifier contract; otherwise the API creates one.
+
+`GET /api/metrics` reports bounded aggregate request status classes, fixed latency buckets, and checkout creation/replay/rejection counts for this process. It uses no per-order/customer labels and is protected by the optional administrative capability. Restart resets these in-memory counters.
