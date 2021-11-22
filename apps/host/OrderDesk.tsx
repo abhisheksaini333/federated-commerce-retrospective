@@ -23,8 +23,13 @@ export default function OrderDesk() {
     await listRequest.current.run(signal=>Promise.all([api<{orders:Order[];total:number;nextCursor:string|null}>(`/api/orders?${params}`,{signal}),api<typeof stats>('/api/stats',{signal})]),([data,global])=>{setLocked(false);setOrders(data.orders);setTotal(data.total);setNextCursor(data.nextCursor);setStats(global);},error=>{setLocked(error instanceof ApiFailure&&error.status===401);setError((error as Error).message);},()=>setLoading(false));
   }
   useEffect(() => {
-    void refresh();return()=>listRequest.current.cancel();
+    setSelected(null);void refresh();return()=>listRequest.current.cancel();
   }, [search,status,after]);
+  function applyOrder(order:Order){
+    const previous=orders.find(value=>value.id===order.id);
+    setOrders(values=>values.flatMap(value=>value.id===order.id?(!status||order.status===status?[order]:[]):[value]));
+    if(previous&&previous.status!==order.status){setStats(value=>({...value,activeTotalCents:order.status==='cancelled'?Math.max(0,value.activeTotalCents-order.totalCents):value.activeTotalCents,byStatus:{...value.byStatus,[previous.status]:Math.max(0,value.byStatus[previous.status]-1),[order.status]:value.byStatus[order.status]+1}}));if(status&&order.status!==status)setTotal(value=>Math.max(0,value-1));}
+  }
   async function fulfill(id: string) {
     listRequest.current.cancel();setLoading(false);
     setBusy(previous=>new Set(previous).add(id));
@@ -35,10 +40,7 @@ export default function OrderDesk() {
         headers:{"If-Match":`"order-${orders.find(order=>order.id===id)?.version}"`},
         body: JSON.stringify({ status: "fulfilled" }),
       });
-      setStats(previous=>({...previous,byStatus:{...previous.byStatus,placed:Math.max(0,previous.byStatus.placed-1),fulfilled:previous.byStatus.fulfilled+1}}));
-      setOrders((previous) =>
-        previous.map((value) => (value.id === id ? order : value)),
-      );
+      applyOrder(order);
     } catch (error) {
       setError((error as Error).message);
     } finally {
@@ -86,7 +88,7 @@ export default function OrderDesk() {
           </strong>
         </div>
       </div>
-      {selected&&<OrderDetails key={selected} id={selected} onClose={()=>setSelected(null)} onUpdated={order=>setOrders(previous=>previous.map(value=>value.id===order.id?order:value))}/>}
+      {selected&&<OrderDetails key={selected} id={selected} onClose={()=>setSelected(null)} onUpdated={applyOrder}/>}
       {error && (
         <div role="alert" className="notice">
           {error}
