@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { money, type Order } from "../../packages/contracts";
+import ActivityDesk from './ActivityDesk';
 import InventoryDesk from './InventoryDesk';
 import OrderDetails from './OrderDetails';
 import {LatestTask} from './latest';
@@ -66,8 +67,8 @@ export default function OrderDesk() {
           Refresh orders
         </button>
       </div>
-      <div role="group" aria-label="Order desk sections"><button className="text-button" aria-pressed={section==='orders'} onClick={()=>setSection('orders')}>Orders</button><button className="text-button" aria-pressed={section==='inventory'} onClick={()=>setSection('inventory')}>Inventory</button></div>
-      {section==='inventory'?<InventoryDesk/>:<>
+      <div role="group" aria-label="Order desk sections"><button className="text-button" aria-pressed={section==='orders'} onClick={()=>setSection('orders')}>Orders</button><button className="text-button" aria-pressed={section==='inventory'} onClick={()=>setSection('inventory')}>Inventory</button><button className="text-button" aria-pressed={section==='activity'} onClick={()=>setSection('activity')}>Activity</button></div>
+      {section==='activity'?<ActivityDesk/>:section==='inventory'?<InventoryDesk/>:<>
       <form className="collection-toolbar" onSubmit={event=>{event.preventDefault();setAfter('');setSearch(query.trim());}}><label>Customer search <input value={query} maxLength={60} onChange={event=>setQuery(event.target.value)}/></label><label>Status <select value={status} disabled={busy.size>0} onChange={event=>{setAfter('');setStatus(event.target.value);}}><option value="">All statuses</option><option value="placed">Placed</option><option value="fulfilled">Fulfilled</option><option value="cancelled">Cancelled</option></select></label><button className="button secondary" disabled={busy.size>0}>Apply filters</button></form>
       <p role="status">{total} matching orders</p><div><button className="text-button" disabled={!after||loading||busy.size>0} onClick={()=>setAfter('')}>First page</button><button className="text-button" disabled={!nextCursor||loading||busy.size>0} onClick={()=>setAfter(nextCursor!)}>Next page</button></div>
       <div className="desk-stats">
