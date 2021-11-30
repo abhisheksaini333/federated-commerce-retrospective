@@ -20,7 +20,7 @@ If startup reports `EADDRINUSE`, stop the existing process that owns the named p
 3. Use a made-up demo name, choose delivery and place the demo order.
 4. Open **Order desk** and mark the new order fulfilled. Refresh checks current server state.
 
-There is no payment provider, authentication, shipping integration, persistence or cancellation workflow. The order desk is appropriate only for this local synthetic environment.
+The order desk can inspect and cancel placed orders, edit revision-protected inventory counts, filter order pages and review accepted operations. Optional capability protection is described below. Storage remains process-local, with no payment or shipping provider.
 
 ## Failure exercises
 
@@ -31,7 +31,7 @@ The executable exercises live in `tests/e2e/storefront.spec.ts`. Run `npm run bu
 - **API unavailable:** a 503 response is injected for product loading. The recovery panel displays the server message and **Try again** fetches after the fault is removed.
 - **Ambiguous checkout response:** the test sends a real checkout to the API but drops the response. Retrying reuses the same key and produces one order. This models a transport failure after server acceptance.
 
-Remote recovery reloads the page because rejected React lazy imports and webpack remote runtime state may remain cached. Ordinary API retry does not reload. A blocked storage policy prevents persistence across reloads. An in-memory fallback retains the bag and retry key within the current page lifetime, and a dedicated browser test verifies duplicate suppression with storage disabled.
+Remote recovery retries the affected container in place using a fresh lazy boundary. Ordinary API retry also preserves the page. A blocked storage policy prevents persistence across reloads. An in-memory fallback retains the bag and retry key within the current page lifetime, and a dedicated browser test verifies duplicate suppression with storage disabled.
 
 For a manual remote outage, use browser request blocking for the remote origin and reload. Disable blocking before pressing the recovery action. For an API outage, block `/api/products`; remove the block and retry. Do not interpret browser fault injection as infrastructure fault-tolerance evidence.
 
@@ -41,7 +41,7 @@ The API requires a bounded `Idempotency-Key`, valid synthetic customer name, rec
 
 ## CI and evidence
 
-`npm run verify` performs strict typecheck, HTTP tests, production build and Chromium browser checks. CI uses Node 22 on Ubuntu and uploads the browser report/artifacts; a local run does not establish that hosted CI passed. `npm run benchmark` records both bundle variants and six fresh-context page observations. Raw evidence contains actual runtime versions, sample values and resource URLs.
+`npm run verify` performs strict typecheck, HTTP tests, production build and Chromium browser checks. CI uses Node 22 on Ubuntu and uploads the browser report/artifacts; a local run does not establish that hosted CI passed. `npm run benchmark -- --output <new-directory> --samples 3` records both bundle variants and six fresh-context page observations without replacing existing evidence. Raw evidence contains actual runtime versions, sample values and resource URLs.
 
 For real deployment, replace the in-memory store with transactional durable storage, implement authorization and CSRF/origin policy, use trusted versioned HTTPS remote manifests and CSP, establish dependency update/rollback controls, and integrate a real provider only under a separate approved scope.
 
@@ -53,3 +53,5 @@ Mutation budgets default to 200 attempts per minute for each local client and op
 Set `COMMERCE_REQUEST_LOGS=1` for structured request completion logs. Records contain a bounded correlation ID, normalized route template, method, status, and duration. Names, request bodies, query strings, capability tokens and checkout keys are excluded. `X-Request-Id` is echoed when it matches the bounded identifier contract; otherwise the API creates one.
 
 `GET /api/metrics` reports bounded aggregate request status classes, fixed latency buckets, and checkout creation/replay/rejection counts for this process. It uses no per-order/customer labels and is protected by the optional administrative capability. Restart resets these in-memory counters.
+
+Liveness and readiness differ: host `/live` and API `/api/live` report their own listener state. Host `/ready` checks API readiness plus both remote entries with bounded deadlines; it returns 503 and named dependency results if one is unavailable. API `/api/ready` reports its own readiness. `/api/health` remains a compatible health response.

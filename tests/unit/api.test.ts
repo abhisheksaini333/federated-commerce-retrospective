@@ -481,3 +481,7 @@ test('metrics aggregate bounded request and checkout outcomes without per-custom
  assert.equal(snapshot.requests,4);assert.deepEqual(snapshot.checkout,{created:1,replayed:1,rejected:1});assert.equal(snapshot.statusClasses['4xx'],1);assert.ok(snapshot.latency.sumMs>=0);assert.equal(Object.keys(snapshot.latency.buckets).length,5);
  for(let i=0;i<12;i++)await request(app).get('/unknown-'+i+'?customer=secret');const next=(await request(app).get('/api/metrics')).body;assert.deepEqual(Object.keys(next),Object.keys(snapshot));assert.equal(JSON.stringify(next).includes('secret'),false);
 });
+
+test('API liveness remains distinct from declared readiness',async()=>{
+ let ready=false;const app=createApp({ready:()=>ready});assert.equal((await request(app).get('/api/live')).status,200);assert.equal((await request(app).get('/api/ready')).status,503);ready=true;assert.equal((await request(app).get('/api/ready')).status,200);
+});

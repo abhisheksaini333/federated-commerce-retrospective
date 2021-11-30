@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import http from "node:http";
 import {localBoundary,staticHeaders} from "./runtime-security";
+import {dependencyReadiness} from './runtime-readiness';
 import {apiProxy} from "./runtime-proxy";
 import { createApp } from "../apps/api/app";
 import { assetDirectory, origin, type RuntimeConfig } from "./runtime-config";
@@ -15,6 +16,7 @@ export async function startRuntime(config: RuntimeConfig): Promise<http.Server[]
   const apps = [{name:"api" as const, app:createApp({log:process.env.COMMERCE_REQUEST_LOGS==="1"?event=>console.log(JSON.stringify(event)):undefined})}, ...(["host","catalog","cart"] as const).map(name=>{
     const app=express();app.disable("x-powered-by");app.use(staticHeaders(config));
     app.use((_req,res,next)=>{res.set("Cache-Control","no-store");res.set("X-Content-Type-Options","nosniff");next();});
+    if(name==="host"){app.get("/live",(_req,res)=>res.json({status:"alive"}));app.get("/ready",async(_req,res)=>{const result=await dependencyReadiness(config);res.status(result.status==="ready"?200:503).json(result);});}
     if(name==="host")app.get("/runtime-config.js",(_req,res)=>res.type("application/javascript").send(`window.FIELDWORK_CONFIG=${JSON.stringify({version:1,remotes:{catalog:origin(config,"catalog")+"/remoteEntry.js",cart:origin(config,"cart")+"/remoteEntry.js"}})};`));
     if(name==="host") app.use("/api",apiProxy(config.ports.api,config.apiTimeoutMs));
     app.use(express.static(assetDirectory(config,name)));return {name,app};

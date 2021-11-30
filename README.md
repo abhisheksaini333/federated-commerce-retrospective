@@ -18,19 +18,19 @@ npm start
 
 Open **http://127.0.0.1:4310**. Host: 4310; catalog: 4311; cart: 4312; API: 4313. All listeners bind to loopback. `npm run dev` builds once and starts the same production bundles; it is deliberately not an HMR development server. Stop with Ctrl+C, rebuild after source edits.
 
-The catalog, order names and fulfillment actions are synthetic. Enter a made-up name only. No money changes hands and no email, payment, shipping or external service is contacted. API data lives in memory and resets on restart. The order desk has no authentication because this is a local demonstration, not a hosted commerce service.
+The catalog, order names and fulfillment actions are synthetic. Enter a made-up name only. No money changes hands and no email, payment, shipping or external service is contacted. API data lives in memory and resets on restart. Set `COMMERCE_ADMIN_TOKEN` to enable the optional local admin capability. The order desk supports filtered pages, fulfillment, confirmed cancellation, inventory counts and an activity trail.
 
 ## Verify
 
 ```sh
 npx playwright install chromium
 npm run verify
-npm run benchmark
+npm run benchmark -- --output /tmp/fieldwork-benchmark-run --samples 3
 ```
 
 `verify` checks TypeScript, HTTP integration tests, all three production bundles and the isolated `tests/e2e` Chromium suite. Playwright launches its own fresh four-service process and refuses an already running server; stop `npm start` first. API tests create a fresh application/store per test. Browser tests use fresh browser contexts and one worker; four intentional purchase scenarios share a temporary API process, use distinct idempotency keys, and assert relative order counts.
 
-The benchmark rebuilds an eager-cart baseline and an on-demand-cart version, measures build and generated asset sizes, then captures three cold browser contexts for each variant. It writes JSON observations to `evidence/` and restores no running server. Stop other processes on ports 4310–4313 before running it. See [the experiment report](docs/performance.md) for observed results and limits.
+The benchmark rebuilds an eager-cart baseline and an on-demand-cart version, measures build and generated asset sizes, then captures three cold browser contexts for each variant. It requires a new output directory, records source identity and distributions, and preserves existing evidence. It leaves no benchmark server running. Stop other processes on ports 4310–4313 before running it. See [the experiment report](docs/performance.md) for observed results and limits.
 
 ## Source map
 

@@ -17,7 +17,7 @@ const exactKeys = (value: Record<string, unknown>, keys: string[]) =>
   Object.keys(value).every((key) => keys.includes(key));
 
 /** One isolated in-memory store per app; synchronous mutation is atomic in one Node process. */
-export interface AppOptions { log?:(event:RequestLog)=>void; rateLimit?:{limit:number;windowMs:number}; adminToken?:string; maxAuditEvents?: number; maxOrders?: number; products?: readonly Product[]; now?: () => Date; idFactory?: () => string }
+export interface AppOptions { ready?:()=>boolean; log?:(event:RequestLog)=>void; rateLimit?:{limit:number;windowMs:number}; adminToken?:string; maxAuditEvents?: number; maxOrders?: number; products?: readonly Product[]; now?: () => Date; idFactory?: () => string }
 
 export function createApp(options: AppOptions = {}) {
   const rate=options.rateLimit??{limit:200,windowMs:60000};
@@ -71,6 +71,8 @@ export function createApp(options: AppOptions = {}) {
     if(budget.used>=rate.limit){res.set('Retry-After',String(Math.max(1,Math.ceil((budget.expiresAt-time)/1000)))).status(429).json({code:'RATE_LIMITED',error:'Too many changes at once. Wait briefly and retry.'});return;}budget.used++;next();
   });
   app.use(express.json({ limit: "16kb" }));
+  app.get('/api/live',(_req,res)=>res.json({status:'alive'}));
+  app.get('/api/ready',(_req,res)=>{let ready=false;try{ready=options.ready?.()??true;}catch{}res.status(ready?200:503).json({status:ready?'ready':'unavailable'});});
   app.get("/api/health", (_req, res) =>
     res.json({ status: "ok", mode: "synthetic-local-demo" }),
   );
@@ -246,7 +248,7 @@ export function createApp(options: AppOptions = {}) {
   });
   const allowedMethods: [RegExp, string][] = [
     [/^\/api\/inventory\/[^/]+(?:\/count)?$/, 'PATCH'],
-    [/^\/api\/(health|products|orders|stats|audit|session|metrics)$/, 'GET, HEAD'],
+    [/^\/api\/(health|live|ready|products|orders|stats|audit|session|metrics)$/, 'GET, HEAD'],
     [/^\/api\/checkout(?:\/(?:resolve|quote))?$/, 'POST'],
     [/^\/api\/orders\/[^/]+$/, 'GET, HEAD, PATCH'],
   ];
