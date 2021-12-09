@@ -1,0 +1,1 @@
+export function browserSelection(value:string|undefined):('chromium'|'firefox'|'webkit')[]{if(value===undefined||value==='chromium')return ['chromium'];if(value==='all')return ['chromium','firefox','webkit'];throw Error('COMMERCE_BROWSERS must be chromium or all.');}

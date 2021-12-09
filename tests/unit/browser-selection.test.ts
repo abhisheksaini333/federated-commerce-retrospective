@@ -1,0 +1,2 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {browserSelection} from '../support/browser-selection';
+test('cross-browser verification is explicit and rejects misspelled browser modes',()=>{assert.deepEqual(browserSelection(undefined),['chromium']);assert.deepEqual(browserSelection('all'),['chromium','firefox','webkit']);assert.throws(()=>browserSelection('firfox'));});

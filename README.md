@@ -52,3 +52,5 @@ The benchmark rebuilds an eager-cart baseline and an on-demand-cart version, mea
 The runnable evidence covers remote composition, shared React, independent failure handling, authoritative checkout totals, concurrent duplicate suppression in one process, transport retry, and a comparison of early versus deferred cart loading. It does not establish production reliability, durable or distributed transactions, security certification, payment correctness, or real-world conversion/performance improvements. Angular, Nx and Next.js extensions are deliberately outside this implementation.
 
 Original application code and CSS artwork are [MIT licensed](LICENSE). Dependency licenses remain with their owners.
+
+Optional engine coverage: `npx playwright install firefox webkit`, then `COMMERCE_BROWSERS=all npm run test:e2e -- --grep critical`. Firefox and WebKit run the critical purchase and keyboard journeys; Chromium runs the complete suite by default. The CI manual workflow exposes the same optional check.

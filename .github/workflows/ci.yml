@@ -2,6 +2,12 @@ name: Verify Fieldwork Supply
 on:
   push:
   pull_request:
+  workflow_dispatch:
+    inputs:
+      cross_browser:
+        type: boolean
+        default: false
+        description: Run Firefox and WebKit critical journeys
 permissions:
   contents: read
 jobs:
@@ -17,6 +23,12 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run verify
+      - run: npx playwright install --with-deps firefox webkit
+        if: github.event.inputs.cross_browser == 'true'
+      - run: COMMERCE_BROWSERS=all npm run test:e2e -- --grep critical
+        if: github.event.inputs.cross_browser == 'true'
+      - run: npx webpack --mode production --stats normal --json > test-results/webpack-stats.json
+      - run: npx tsx scripts/check-build.ts test-results/webpack-stats.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
