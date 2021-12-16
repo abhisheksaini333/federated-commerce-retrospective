@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, remoteUrl } from "./fixtures";
 
 test("synthetic catalog to checkout to fulfilled order", async ({ page }) => {
   await page.goto("/");
@@ -94,7 +94,7 @@ test("in-flight checkout locks navigation until the response settles", async ({
 test("unavailable catalog remote leaves shell and bag useful, reload recovers", async ({
   page,
 }) => {
-  await page.route("http://127.0.0.1:4311/**", (route) => route.abort());
+  await page.route(remoteUrl("catalog","/**"), (route) => route.abort());
   await page.goto("/");
   await expect(
     page.getByRole("heading", { name: "The collection is taking a moment." }),
@@ -104,7 +104,7 @@ test("unavailable catalog remote leaves shell and bag useful, reload recovers", 
     page.getByText("Your next everyday favorite is waiting."),
   ).toBeVisible();
   await page.getByRole("button", { name: "Shop", exact: true }).click();
-  await page.unroute("http://127.0.0.1:4311/**");
+  await page.unroute(remoteUrl("catalog","/**"));
   await page.getByRole("button", { name: "Reload collection" }).click();
   await expect(
     page.getByRole("button", { name: "Add Everyday notebook" }),
@@ -114,7 +114,7 @@ test("unavailable catalog remote leaves shell and bag useful, reload recovers", 
 test("unavailable cart remote offers saved bag summary and recovery", async ({
   page,
 }) => {
-  await page.route("http://127.0.0.1:4312/**", (route) => route.abort());
+  await page.route(remoteUrl("cart","/**"), (route) => route.abort());
   await page.goto("/");
   await page.getByRole("button", { name: "Add Everyday notebook" }).click();
   await page.getByRole("button", { name: "Bag (1)" }).click();
@@ -122,7 +122,7 @@ test("unavailable cart remote offers saved bag summary and recovery", async ({
     page.getByRole("heading", { name: "Your bag is saved." }),
   ).toBeVisible();
   await expect(page.getByText("1 item · $24.00")).toBeVisible();
-  await page.unroute("http://127.0.0.1:4312/**");
+  await page.unroute(remoteUrl("cart","/**"));
   await page.getByRole("button", { name: "Reload bag" }).click();
   await expect(
     page.getByRole("button", { name: "Continue to checkout" }),
@@ -210,7 +210,7 @@ test("mobile layout fits the viewport and preserves accessible shopping controls
     ),
   ).toBe(true);
   await page.screenshot({
-    path: "evidence/mobile.png",
+    path: test.info().outputPath("mobile.png"),
     fullPage: true,
   });
 });
@@ -236,7 +236,7 @@ test("desktop storefront has no uncaught errors on the healthy path", async ({
     page.getByRole("button", { name: "Add Catchall tray" }),
   ).toBeVisible();
   await page.screenshot({
-    path: "evidence/desktop.png",
+    path: test.info().outputPath("desktop.png"),
     fullPage: true,
   });
   expect(errors).toEqual([]);

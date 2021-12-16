@@ -1,4 +1,4 @@
-import {test,expect} from '@playwright/test';
+import {test,expect,remoteUrl} from './fixtures';
 
 test('saved carts reconcile duplicate unknown and malformed lines',async({page})=>{
  await page.addInitScript(()=>{sessionStorage.setItem('fieldwork:view','bag');sessionStorage.setItem('fieldwork:bag',JSON.stringify([{productId:'notebook',quantity:2},{productId:'notebook',quantity:3},{productId:'missing',quantity:2},{productId:'pencil',quantity:99}]));});
@@ -110,11 +110,11 @@ test('protected order desk unlock sends a memory-only capability',async({page})=
 });
 
 test('failed collection retries in place without reloading the host document',async({page})=>{
- let navigations=0;page.on('framenavigated',frame=>{if(frame===page.mainFrame())navigations++;});await page.route('http://127.0.0.1:4311/**',route=>route.abort());await page.goto('/');await expect(page.getByRole('heading',{name:'The collection is taking a moment.'})).toBeVisible();await page.unroute('http://127.0.0.1:4311/**');await page.getByRole('button',{name:'Reload collection'}).click();await expect(page.getByRole('button',{name:'Add Everyday notebook'})).toBeVisible();expect(navigations).toBe(1);
+ let navigations=0;page.on('framenavigated',frame=>{if(frame===page.mainFrame())navigations++;});await page.route(remoteUrl("catalog","/**"),route=>route.abort());await page.goto('/');await expect(page.getByRole('heading',{name:'The collection is taking a moment.'})).toBeVisible();await page.unroute(remoteUrl("catalog","/**"));await page.getByRole('button',{name:'Reload collection'}).click();await expect(page.getByRole('button',{name:'Add Everyday notebook'})).toBeVisible();expect(navigations).toBe(1);
 });
 
 test('incompatible remote export shows recovery and accepts a corrected entry',async({page})=>{
- await page.route('http://127.0.0.1:4311/remoteEntry.js',route=>route.fulfill({contentType:'application/javascript',body:'window.catalog={init:function(){},get:function(){return Promise.resolve(function(){return {contractVersion:99,default:function(){return null}}})}};'}));await page.goto('/');await expect(page.getByRole('heading',{name:'The collection is taking a moment.'})).toBeVisible();await page.unroute('http://127.0.0.1:4311/remoteEntry.js');await page.getByRole('button',{name:'Reload collection'}).click();await expect(page.getByRole('button',{name:'Add Everyday notebook'})).toBeVisible();
+ await page.route(remoteUrl("catalog","/remoteEntry.js"),route=>route.fulfill({contentType:'application/javascript',body:'window.catalog={init:function(){},get:function(){return Promise.resolve(function(){return {contractVersion:99,default:function(){return null}}})}};'}));await page.goto('/');await expect(page.getByRole('heading',{name:'The collection is taking a moment.'})).toBeVisible();await page.unroute(remoteUrl("catalog","/remoteEntry.js"));await page.getByRole('button',{name:'Reload collection'}).click();await expect(page.getByRole('button',{name:'Add Everyday notebook'})).toBeVisible();
 });
 
 test('corrupted accepted checkout preserves its key and replays after stock is exhausted',async({page,request})=>{

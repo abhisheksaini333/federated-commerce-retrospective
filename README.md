@@ -28,7 +28,7 @@ npm run verify
 npm run benchmark -- --output /tmp/fieldwork-benchmark-run --samples 3
 ```
 
-`verify` checks TypeScript, HTTP integration tests, all three production bundles and the isolated `tests/e2e` Chromium suite. Playwright launches its own fresh four-service process and refuses an already running server; stop `npm start` first. API tests create a fresh application/store per test. Browser tests use fresh browser contexts and one worker; four intentional purchase scenarios share a temporary API process, use distinct idempotency keys, and assert relative order counts.
+`verify` checks TypeScript, HTTP integration tests, all three production bundles and the isolated `tests/e2e` Chromium suite. Every browser test starts its own four-service runtime and fresh store, then drains it on teardown. Stop `npm start` first. API tests create isolated stores. Set `COMMERCE_WORKERS=2` to run files concurrently: workers use separate port ranges in increments of 10 from `COMMERCE_TEST_PORT_BASE` (4310 by default). Screenshots go to per-test output directories; recorded evidence remains untouched.
 
 The benchmark rebuilds an eager-cart baseline and an on-demand-cart version, measures build and generated asset sizes, then captures three cold browser contexts for each variant. It requires a new output directory, records source identity and distributions, and preserves existing evidence. It leaves no benchmark server running. Stop other processes on ports 4310–4313 before running it. See [the experiment report](docs/performance.md) for observed results and limits.
 

@@ -1,4 +1,4 @@
-import {test,expect} from '@playwright/test';
+import {test,expect,remoteUrl} from './fixtures';
 test('critical catalog to receipt journey has no uncaught browser errors',async({page})=>{
  const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));await page.goto('/');await page.getByRole('button',{name:'Add Everyday notebook'}).click();await page.getByRole('button',{name:'Bag (1)'}).click();await page.getByRole('button',{name:'Continue to checkout'}).click();await page.getByLabel('Demo name').fill('Cross Browser Demo');await page.getByRole('button',{name:'Place demo order'}).click();await expect(page.getByTestId('order-id')).toContainText('FW-');await page.reload();await expect(page.getByRole('heading',{name:'A good day for good things.'})).toBeVisible();expect(errors).toEqual([]);
 });

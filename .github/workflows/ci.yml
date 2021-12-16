@@ -36,4 +36,3 @@ jobs:
           path: |
             playwright-report/
             test-results/
-            evidence/*.png
