@@ -485,3 +485,29 @@ test('metrics aggregate bounded request and checkout outcomes without per-custom
 test('API liveness remains distinct from declared readiness',async()=>{
  let ready=false;const app=createApp({ready:()=>ready});assert.equal((await request(app).get('/api/live')).status,200);assert.equal((await request(app).get('/api/ready')).status,503);ready=true;assert.equal((await request(app).get('/api/ready')).status,200);
 });
+
+test('cancellation preflights every restock and rejects overflow without partial mutation',async()=>{
+ const app=createApp();const accepted=await checkout(app,'overflow-restock',{...body,items:[{productId:'notebook',quantity:1},{productId:'pencil',quantity:1}]});
+ await request(app).patch('/api/inventory/pencil/count').set('If-Match','"inventory-1"').send({stock:Number.MAX_SAFE_INTEGER,reason:'Boundary fixture'});
+ const before=(await request(app).get('/api/products')).body;const auditBefore=(await request(app).get('/api/audit')).body;
+ const rejected=await request(app).patch('/api/orders/'+accepted.body.order.id).send({status:'cancelled'});assert.equal(rejected.status,409);assert.equal(rejected.body.code,'INVENTORY_OVERFLOW');
+ assert.deepEqual((await request(app).get('/api/products')).body,before);assert.deepEqual((await request(app).get('/api/orders/'+accepted.body.order.id)).body.order,accepted.body.order);assert.deepEqual((await request(app).get('/api/audit')).body,auditBefore);
+});
+
+test('deterministic inventory model conserves units across retries terminal transitions and adjustments',async()=>{
+ const app=createApp();let expected=12;let adjustment=0;const active=new Map<string,number>();let seed=17;
+ for(let step=0;step<24;step++){
+  seed=(seed*48271)%2147483647;const quantity=seed%3+1;const payload={...body,items:[{productId:'notebook',quantity}]};const key=`model-checkout-${step}`;
+  const accepted=await checkout(app,key,payload);
+  if(expected<quantity){assert.equal(accepted.status,409);}else{
+   assert.equal(accepted.status,201);expected-=quantity;active.set(accepted.body.order.id,quantity);
+   assert.equal((await checkout(app,key,payload)).status,200);
+   const status=seed%2?'cancelled':'fulfilled';const changed=await request(app).patch('/api/orders/'+accepted.body.order.id).send({status});assert.equal(changed.status,200);
+   if(status==='cancelled'){expected+=quantity;active.delete(accepted.body.order.id);}
+   assert.deepEqual((await request(app).patch('/api/orders/'+accepted.body.order.id).send({status})).body,changed.body);
+   assert.equal((await request(app).patch('/api/orders/'+accepted.body.order.id).send({status:status==='cancelled'?'fulfilled':'cancelled'})).status,409);
+  }
+  const delta=seed%2?1:2;assert.equal((await request(app).patch('/api/inventory/notebook').send({delta,reason:'Model replenishment'})).status,200);expected+=delta;adjustment+=delta;
+  const actual=(await request(app).get('/api/products')).body.products[0].stock;assert.equal(actual,expected);assert.equal(actual+[...active.values()].reduce((a,b)=>a+b,0),12+adjustment);assert.equal(Number.isSafeInteger(actual),true);
+ }
+});

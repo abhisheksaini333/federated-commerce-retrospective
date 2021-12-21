@@ -55,3 +55,5 @@ Set `COMMERCE_REQUEST_LOGS=1` for structured request completion logs. Records co
 `GET /api/metrics` reports bounded aggregate request status classes, fixed latency buckets, and checkout creation/replay/rejection counts for this process. It uses no per-order/customer labels and is protected by the optional administrative capability. Restart resets these in-memory counters.
 
 Liveness and readiness differ: host `/live` and API `/api/live` report their own listener state. Host `/ready` checks API readiness plus both remote entries with bounded deadlines; it returns 503 and named dependency results if one is unavailable. API `/api/ready` reports its own readiness. `/api/health` remains a compatible health response.
+
+Cancellation preflights all returned quantities before changing any stock, order version, revision or audit event. If an extreme inventory count would overflow a safe integer, `409 INVENTORY_OVERFLOW` leaves the entire operation unchanged; correct the count and retry. The deterministic HTTP model checks conservation across accepted orders, replays, cancellations, fulfillment and replenishment.

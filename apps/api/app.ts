@@ -239,6 +239,7 @@ export function createApp(options: AppOptions = {}) {
     if(order.status!==nextStatus&&expected&&expected!==`"order-${order.version}"`){res.status(412).json({code:'PRECONDITION_FAILED',error:'This order changed. Refresh before updating it.'});return;}
     if(order.status!==nextStatus&&order.status!=='placed'){res.status(409).json({code:'INVALID_TRANSITION',error:'Completed orders cannot change to another terminal status.'});return;}
     if(nextStatus==='cancelled'&&order.status==='placed'){
+      if(order.items.some(line=>!Number.isSafeInteger(products.find(product=>product.id===line.productId)!.stock+line.quantity))){res.status(409).json({code:'INVENTORY_OVERFLOW',error:'Stock cannot safely hold this cancellation. Correct the inventory count before retrying.'});return;}
       for(const line of order.items) products.find(product=>product.id===line.productId)!.stock+=line.quantity;
       inventoryRevision++;
     }
