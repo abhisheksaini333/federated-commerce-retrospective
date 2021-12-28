@@ -34,7 +34,7 @@ export async function api<T>(
     let data: any;
     try { data = await response.json(); } catch { throw new ApiFailure('The shop service returned an unreadable response. Please try again.', response.status, 'INVALID_RESPONSE'); }
     if (!response.ok)
-      throw new ApiFailure((typeof data?.error === 'string' ? data.error : '') || 'The service could not complete that request. Please try again.', response.status, typeof data?.code === 'string' ? data.code : 'HTTP_ERROR', Array.isArray(data?.issues) ? data.issues : []);
+      throw new ApiFailure((typeof data?.error === 'string' ? data.error : '') || 'The service could not complete that request. Please try again.', response.status, typeof data?.code === 'string' ? data.code : 'HTTP_ERROR', Array.isArray(data?.issues) ? data.issues.filter((issue:unknown)=>issue&&typeof issue==='object'&&typeof (issue as any).path==='string'&&typeof (issue as any).message==='string').slice(0,100) : []);
     if (!validApiResponse(url, data)) throw new ApiFailure('The shop service returned invalid data. Please try again.', response.status, 'INVALID_RESPONSE');
     return data as T;
   } catch (error) {

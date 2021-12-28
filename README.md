@@ -45,7 +45,7 @@ The benchmark rebuilds an eager-cart baseline and an on-demand-cart version, mea
 | `tests/unit`, `tests/e2e` | HTTP invariants and real-browser journey/failure evidence |
 | `scripts` | Loopback service lifecycle and benchmark runner |
 
-[Architecture and sequence diagrams](docs/architecture.md) · [ADR and alternatives](docs/adr/001-federation-and-local-state.md) · [Operations and failure exercises](docs/runbook.md) · [Dependency provenance](docs/provenance.md) · [Verification evidence](verification.md)
+[Architecture and sequence diagrams](docs/architecture.md) · [ADR and alternatives](docs/adr/001-federation-and-local-state.md) · [Operations and failure exercises](docs/runbook.md) · [Runtime configuration and build gates](docs/runtime-operations.md) · [API contracts](docs/api-contracts.md) · [Dependency provenance](docs/provenance.md) · [Verification evidence](verification.md)
 
 ## What this demonstrates—and its limits
 

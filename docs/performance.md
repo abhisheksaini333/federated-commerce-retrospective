@@ -46,3 +46,7 @@ This is a small demonstration with a small cart component. Its result supports t
 The browser Resource Timing sums exclude the main HTML navigation and reflect browser-reported transfer sizes. The server does not enable HTTP compression; gzip totals describe modeled emitted artifacts, not observed transfer. Emitted totals include unused runtime/vendor alternatives across independent builds, exclude source maps, and are not equivalent to page download size.
 
 Three samples, unthrottled loopback, a fixed variant order, a shared busy machine and a single build observation are insufficient for statistical inference. The build-time difference cannot be attributed to this optimization. Production conclusions require randomized/repeated runs, representative mobile CPU/network profiles, field data, comparable cache/CDN behavior and explicit user-experience budgets.
+
+## Running a new experiment
+
+The measurements above remain the recorded implementation evidence. The current runner requires `npm run benchmark -- --output <new-directory> --samples 3`, counterbalances variant order, records source identity and summarizes distributions while retaining raw observations. See [runtime operations](runtime-operations.md) for configurable ports, deadlines and build-budget commands. Existing evidence is never replaced.

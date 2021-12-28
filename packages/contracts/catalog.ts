@@ -1,5 +1,5 @@
 import type { Product } from './index';
-export function validateCatalog(products: readonly Product[]): void {
+export function validateCatalog(products: unknown): asserts products is readonly Product[] {
  if(!Array.isArray(products)||products.length>1000) throw new Error('Invalid catalog collection.');
  const ids=new Set<string>();
  for(const product of products){

@@ -44,6 +44,21 @@ test('successful but invalid service payloads fail at the HTTP boundary', async 
   globalThis.fetch=async()=>new Response(JSON.stringify(payload),{headers:{'Content-Type':'application/json'}});
   await assert.rejects(api(url),(error:unknown)=>(error as {code:string}).code==='INVALID_RESPONSE');
  }
- globalThis.fetch=async()=>new Response(JSON.stringify({products:[]}),{headers:{'Content-Type':'application/json'}});
- assert.deepEqual(await api('/api/products'),{products:[]});
+ globalThis.fetch=async()=>new Response(JSON.stringify({products:[],revision:0}),{headers:{'Content-Type':'application/json'}});
+ assert.deepEqual(await api('/api/products'),{products:[],revision:0});
+});
+
+test('operational response envelopes validate receipt state revisions pagination and version tokens',async()=>{
+ const malformed:[string,unknown][]=[['/api/checkout/resolve',{status:'accepted',order:{}}],['/api/checkout/resolve',{status:'maybe'}],['/api/products',{products:[],revision:-1}],['/api/orders',{orders:[],total:0,nextCursor:42}],['/api/inventory/notebook/count',{product:{id:'notebook'},revision:0}]];
+ for(const [url,value] of malformed){globalThis.fetch=async()=>new Response(JSON.stringify(value),{headers:{'Content-Type':'application/json'}});await assert.rejects(api(url),(error:unknown)=>(error as {code:string}).code==='INVALID_RESPONSE');}
+ globalThis.fetch=async()=>new Response(JSON.stringify({status:'unknown'}),{headers:{'Content-Type':'application/json'}});assert.deepEqual(await api('/api/checkout/resolve'),{status:'unknown'});
+});
+test('malformed server issue entries cannot crash field-level error recovery',async()=>{
+ globalThis.fetch=async()=>new Response(JSON.stringify({error:'Rejected',issues:[null,42,{path:'customerName',message:'Fix name'},{path:3,message:[]}]}),{status:400,headers:{'Content-Type':'application/json'}});
+ await assert.rejects(api('/api/checkout'),(error:unknown)=>{assert.deepEqual((error as {issues:unknown}).issues,[{path:'customerName',message:'Fix name'}]);return true;});
+});
+
+import {validOrder} from '../../packages/contracts/responses';
+test('order responses require a positive integer version before conditional updates',()=>{
+ const order={version:1,id:'test-order',customerName:'Demo',shipping:'standard',status:'placed',createdAt:new Date().toISOString(),items:[{productId:'notebook',quantity:1,name:'Notebook',unitPriceCents:2400}],subtotalCents:2400,shippingCents:600,totalCents:3000};assert.equal(validOrder(order),true);for(const version of [undefined,0,1.5])assert.equal(validOrder({...order,version}),false);
 });

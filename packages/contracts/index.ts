@@ -1,4 +1,4 @@
-/** Shared wire and component contracts. Runtime validation remains the API's responsibility. */
+/** Shared wire and component contracts; API inputs and client responses are validated at their boundaries. */
 export type Category = "Desk" | "Carry" | "Tools";
 export type Shipping = "standard" | "express";
 export interface Product {
