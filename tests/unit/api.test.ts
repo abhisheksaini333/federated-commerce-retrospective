@@ -511,3 +511,9 @@ test('deterministic inventory model conserves units across retries terminal tran
   const actual=(await request(app).get('/api/products')).body.products[0].stock;assert.equal(actual,expected);assert.equal(actual+[...active.values()].reduce((a,b)=>a+b,0),12+adjustment);assert.equal(Number.isSafeInteger(actual),true);
  }
 });
+
+test('statistics reject aggregate stock beyond exact integer range instead of rounding units',async()=>{
+ const app=createApp();await request(app).patch('/api/inventory/notebook/count').set('If-Match','"inventory-0"').send({stock:Number.MAX_SAFE_INTEGER,reason:'Aggregate boundary'});
+ const result=await request(app).get('/api/stats');assert.equal(result.status,503);assert.equal(result.body.code,'AGGREGATE_OVERFLOW');assert.equal(result.body.stockUnits,undefined);
+ assert.equal((await request(app).get('/api/products')).body.products[0].stock,Number.MAX_SAFE_INTEGER);
+});

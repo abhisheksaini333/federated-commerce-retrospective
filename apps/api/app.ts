@@ -81,7 +81,10 @@ export function createApp(options: AppOptions = {}) {
   app.get('/api/audit',(_req,res)=>res.json({events:[...events].reverse()}));
   app.get('/api/stats',(_req,res)=>{
     const values=[...orders.values()];
-    res.json({orders:values.length,byStatus:{placed:values.filter(order=>order.status==='placed').length,fulfilled:values.filter(order=>order.status==='fulfilled').length,cancelled:values.filter(order=>order.status==='cancelled').length},activeTotalCents:values.filter(order=>order.status!=='cancelled').reduce((sum,order)=>sum+order.totalCents,0),stockUnits:products.reduce((sum,product)=>sum+product.stock,0),revision:inventoryRevision});
+    const activeTotal=values.filter(order=>order.status!=='cancelled').reduce((sum,order)=>sum+BigInt(order.totalCents),0n);
+    const stockTotal=products.reduce((sum,product)=>sum+BigInt(product.stock),0n);
+    if(activeTotal>BigInt(Number.MAX_SAFE_INTEGER)||stockTotal>BigInt(Number.MAX_SAFE_INTEGER)){res.status(503).json({code:'AGGREGATE_OVERFLOW',error:'The demo reporting range was exceeded. Correct extreme inventory counts or reset the demo session before retrying statistics.'});return;}
+    res.json({orders:values.length,byStatus:{placed:values.filter(order=>order.status==='placed').length,fulfilled:values.filter(order=>order.status==='fulfilled').length,cancelled:values.filter(order=>order.status==='cancelled').length},activeTotalCents:Number(activeTotal),stockUnits:Number(stockTotal),revision:inventoryRevision});
   });
   app.get('/api/orders',(req,res)=>{
     const rawLimit=req.query.limit;const after=req.query.after;
