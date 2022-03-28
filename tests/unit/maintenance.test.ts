@@ -16,3 +16,8 @@ test('undo expires at its deadline and rejects invalid clocks',()=>{
  for(const now of [100,NaN,Infinity])assert.deepEqual(restoreRemoved([],removed,seedProducts,now),[]);
  assert.deepEqual(restoreRemoved([],{...removed,expiresAt:NaN},seedProducts,1),[]);
 });
+
+test('persisted drafts reject invalid single-line customer names',()=>{
+ for(const name of ['bad\nname','   ','bad\u0000'])assert.equal(readDraft(JSON.stringify({name,shipping:'standard'})).name,'Alex Demo');
+ assert.equal(readDraft(JSON.stringify({name:'Café',shipping:'express'})).name,'Café');
+});

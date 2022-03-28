@@ -13,7 +13,7 @@ export function checkoutIntent(payload:CheckoutRequest,raw:string|null,newKey:()
 }
 
 export function readDraft(raw:string|null):{name:string;shipping:CheckoutRequest['shipping']} {
- try {const value=JSON.parse(raw||'null');if(typeof value?.name==='string'&&value.name.length<=60&&['standard','express'].includes(value.shipping))return {name:value.name,shipping:value.shipping};}catch{}
+ try {const value=JSON.parse(raw||'null');if(typeof value?.name==='string'&&!!value.name.trim()&&value.name.length<=60&&!/[\u0000-\u001f\u007f-\u009f]/.test(value.name)&&['standard','express'].includes(value.shipping))return {name:value.name,shipping:value.shipping};}catch{}
  return {name:'Alex Demo',shipping:'standard'};
 }
 export function readPending(raw:string|null):CheckoutIntent|null {
