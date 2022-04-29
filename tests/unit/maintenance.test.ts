@@ -21,3 +21,9 @@ test('persisted drafts reject invalid single-line customer names',()=>{
  for(const name of ['bad\nname','   ','bad\u0000'])assert.equal(readDraft(JSON.stringify({name,shipping:'standard'})).name,'Alex Demo');
  assert.equal(readDraft(JSON.stringify({name:'Café',shipping:'express'})).name,'Café');
 });
+
+test('oversized saved checkout intent cannot retain stale identity',()=>{
+ const first=checkoutIntent(payload,null,()=> 'original-key');
+ const raw=JSON.stringify({...first,padding:'x'.repeat(64000)});
+ assert.equal(checkoutIntent(payload,raw,()=> 'fresh-key').key,'fresh-key');
+});
