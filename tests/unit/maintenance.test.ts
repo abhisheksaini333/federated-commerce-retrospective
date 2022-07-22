@@ -27,3 +27,9 @@ test('oversized saved checkout intent cannot retain stale identity',()=>{
  const raw=JSON.stringify({...first,padding:'x'.repeat(64000)});
  assert.equal(checkoutIntent(payload,raw,()=> 'fresh-key').key,'fresh-key');
 });
+
+test('catalog records must own their required fields',()=>{
+ assert.throws(()=>validateCatalog([Object.create(seedProducts[0])]));
+ const array=Object.assign([],seedProducts[0]);assert.throws(()=>validateCatalog([array]));
+ validateCatalog(seedProducts);
+});
