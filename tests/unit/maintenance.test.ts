@@ -33,3 +33,8 @@ test('catalog records must own their required fields',()=>{
  const array=Object.assign([],seedProducts[0]);assert.throws(()=>validateCatalog([array]));
  validateCatalog(seedProducts);
 });
+
+test('catalog display text rejects controls while retaining ordinary prose',()=>{
+ for(const extra of [{name:'Bad\u0000'},{description:'Bad\u0001'}])assert.throws(()=>validateCatalog([{...seedProducts[0],...extra}]));
+ validateCatalog([{...seedProducts[0],description:'Line one\nLine two'}]);
+});
