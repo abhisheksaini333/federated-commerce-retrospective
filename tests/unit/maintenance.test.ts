@@ -38,3 +38,8 @@ test('catalog display text rejects controls while retaining ordinary prose',()=>
  for(const extra of [{name:'Bad\u0000'},{description:'Bad\u0001'}])assert.throws(()=>validateCatalog([{...seedProducts[0],...extra}]));
  validateCatalog([{...seedProducts[0],description:'Line one\nLine two'}]);
 });
+
+test('session responses require an explicit protection boolean',()=>{
+ assert.equal(validApiResponse('/api/session',{adminProtected:false}),true);
+ for(const value of [{},{adminProtected:'false'},null])assert.equal(validApiResponse('/api/session',value),false);
+});
