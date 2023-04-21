@@ -10,6 +10,7 @@ export function validOrder(value:unknown):boolean {
 }
 export function validApiResponse(url:string,value:unknown):boolean {
  const path=new URL(url,'http://local.invalid').pathname;
+ if(path==='/api/checkout/quote')return record(value)&&record(value.quote)&&cents(value.quote.revision)&&validOrder({...value.quote,id:'quote',version:1,customerName:'Quote',shipping:'standard',status:'placed',createdAt:'1970-01-01T00:00:00Z'});
  if(path==='/api/session')return record(value)&&typeof value.adminProtected==='boolean';
  if(path==='/api/products'){if(!record(value)||!Array.isArray(value.products)||!cents(value.revision))return false;try{validateCatalog(value.products);return true;}catch{return false;}}
  if(path==='/api/checkout/resolve')return record(value)&&(value.status==='unknown'||value.status==='accepted'&&validOrder(value.order));

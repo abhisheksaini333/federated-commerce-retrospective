@@ -43,3 +43,10 @@ test('session responses require an explicit protection boolean',()=>{
  assert.equal(validApiResponse('/api/session',{adminProtected:false}),true);
  for(const value of [{},{adminProtected:'false'},null])assert.equal(validApiResponse('/api/session',value),false);
 });
+
+test('checkout quote arithmetic and line identities are validated',()=>{
+ const quote={revision:1,items:order.items,subtotalCents:2400,shippingCents:600,totalCents:3000};
+ assert.equal(validApiResponse('/api/checkout/quote',{quote}),true);
+ assert.equal(validApiResponse('/api/checkout/quote',{quote:{...quote,totalCents:1}}),false);
+ assert.equal(validApiResponse('/api/checkout/quote',{quote:{...quote,items:[...order.items,...order.items]}}),false);
+});
