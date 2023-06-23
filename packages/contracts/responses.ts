@@ -2,10 +2,10 @@ import { validateCatalog } from './catalog';
 const record=(value:unknown):value is Record<string,unknown>=>!!value&&typeof value==='object'&&!Array.isArray(value);
 const cents=(value:unknown)=>typeof value==='number'&&Number.isSafeInteger(value)&&value>=0;
 export function validOrder(value:unknown):boolean {
- if(!record(value)||!Number.isSafeInteger(value.version)||(value.version as number)<1||typeof value.id!=='string'||!value.id||typeof value.customerName!=='string'||!['standard','express'].includes(value.shipping as string)||!['placed','fulfilled','cancelled'].includes(value.status as string)||typeof value.createdAt!=='string'||!Number.isFinite(Date.parse(value.createdAt)))return false;
+ if(!record(value)||!Number.isSafeInteger(value.version)||(value.version as number)<1||typeof value.id!=='string'||!/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/.test(value.id)||typeof value.customerName!=='string'||!value.customerName.trim()||value.customerName.length>60||/[\u0000-\u001f\u007f-\u009f]/.test(value.customerName)||!['standard','express'].includes(value.shipping as string)||!['placed','fulfilled','cancelled'].includes(value.status as string)||typeof value.createdAt!=='string'||!Number.isFinite(Date.parse(value.createdAt)))return false;
  if(!Array.isArray(value.items)||!value.items.length||value.items.length>6||!cents(value.subtotalCents)||!cents(value.shippingCents)||!cents(value.totalCents))return false;
  let total=0;const ids=new Set<string>();
- for(const line of value.items){if(!record(line)||typeof line.productId!=='string'||ids.has(line.productId)||typeof line.name!=='string'||!line.name||!cents(line.unitPriceCents)||typeof line.quantity!=='number'||!Number.isInteger(line.quantity)||line.quantity<1||line.quantity>10)return false;ids.add(line.productId);total+=(line.unitPriceCents as number)*line.quantity;}
+ for(const line of value.items){if(!record(line)||typeof line.productId!=='string'||!/^[a-z0-9][a-z0-9_-]{0,63}$/.test(line.productId)||ids.has(line.productId)||typeof line.name!=='string'||!line.name.trim()||line.name.length>100||/[\u0000-\u001f\u007f-\u009f]/.test(line.name)||!cents(line.unitPriceCents)||typeof line.quantity!=='number'||!Number.isInteger(line.quantity)||line.quantity<1||line.quantity>10)return false;ids.add(line.productId);total+=(line.unitPriceCents as number)*line.quantity;}
  return total===value.subtotalCents&&Number.isSafeInteger(total)&&total+(value.shippingCents as number)===value.totalCents;
 }
 export function validApiResponse(url:string,value:unknown):boolean {

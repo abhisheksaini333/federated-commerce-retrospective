@@ -50,3 +50,9 @@ test('checkout quote arithmetic and line identities are validated',()=>{
  assert.equal(validApiResponse('/api/checkout/quote',{quote:{...quote,totalCents:1}}),false);
  assert.equal(validApiResponse('/api/checkout/quote',{quote:{...quote,items:[...order.items,...order.items]}}),false);
 });
+
+test('order response identities and customer display fields are bounded',()=>{
+ for(const extra of [{customerName:''},{customerName:'bad\nname'},{id:'x'.repeat(129)}])assert.equal(validOrder({...order,...extra}),false);
+ assert.equal(validOrder({...order,items:[{...order.items[0],productId:'bad/id'}]}),false);
+ assert.equal(validOrder(order),true);
+});
