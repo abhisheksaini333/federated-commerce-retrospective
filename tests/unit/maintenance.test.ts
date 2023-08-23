@@ -56,3 +56,9 @@ test('order response identities and customer display fields are bounded',()=>{
  assert.equal(validOrder({...order,items:[{...order.items[0],productId:'bad/id'}]}),false);
  assert.equal(validOrder(order),true);
 });
+
+test('statistics responses reconcile counts and inventory metadata',()=>{
+ const stats={orders:1,activeTotalCents:3000,stockUnits:20,revision:1,byStatus:{placed:1,fulfilled:0,cancelled:0}};
+ assert.equal(validApiResponse('/api/stats',stats),true);
+ for(const extra of [{orders:2},{stockUnits:-1},{revision:'1'}])assert.equal(validApiResponse('/api/stats',{...stats,...extra}),false);
+});
