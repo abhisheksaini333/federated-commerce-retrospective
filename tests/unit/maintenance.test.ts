@@ -62,3 +62,9 @@ test('statistics responses reconcile counts and inventory metadata',()=>{
  assert.equal(validApiResponse('/api/stats',stats),true);
  for(const extra of [{orders:2},{stockUnits:-1},{revision:'1'}])assert.equal(validApiResponse('/api/stats',{...stats,...extra}),false);
 });
+
+test('order pages reject duplicate identities and invalid continuation cursors',()=>{
+ assert.equal(validApiResponse('/api/orders',{orders:[order,order],total:2,nextCursor:null}),false);
+ assert.equal(validApiResponse('/api/orders',{orders:[order],total:2,nextCursor:'unknown'}),false);
+ assert.equal(validApiResponse('/api/orders',{orders:[order],total:2,nextCursor:order.id}),true);
+});
