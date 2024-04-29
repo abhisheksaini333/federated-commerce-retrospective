@@ -68,3 +68,10 @@ test('order pages reject duplicate identities and invalid continuation cursors',
  assert.equal(validApiResponse('/api/orders',{orders:[order],total:2,nextCursor:'unknown'}),false);
  assert.equal(validApiResponse('/api/orders',{orders:[order],total:2,nextCursor:order.id}),true);
 });
+
+test('audit response sequences are unique and newest first',()=>{
+ const event={sequence:1,type:'created',subjectId:'order',at:'2021-01-01T00:00:00Z',details:{}};
+ assert.equal(validApiResponse('/api/audit',{events:[event,event]}),false);
+ assert.equal(validApiResponse('/api/audit',{events:[event,{...event,sequence:2}]}),false);
+ assert.equal(validApiResponse('/api/audit',{events:[{...event,sequence:3},event]}),true);
+});
