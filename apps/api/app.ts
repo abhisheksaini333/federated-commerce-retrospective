@@ -87,6 +87,7 @@ export function createApp(options: AppOptions = {}) {
     res.json({orders:values.length,byStatus:{placed:values.filter(order=>order.status==='placed').length,fulfilled:values.filter(order=>order.status==='fulfilled').length,cancelled:values.filter(order=>order.status==='cancelled').length},activeTotalCents:Number(activeTotal),stockUnits:Number(stockTotal),revision:inventoryRevision});
   });
   app.get('/api/orders',(req,res)=>{
+    if(Object.keys(req.query).some(key=>!['limit','after','status','q'].includes(key))){res.status(400).json({code:'INVALID_QUERY',error:'Use only documented order filters.'});return;}
     const rawLimit=req.query.limit;const after=req.query.after;
     const limit=rawLimit===undefined?25:typeof rawLimit==='string'&&/^[1-9][0-9]*$/.test(rawLimit)?Number(rawLimit):NaN;
     if(!Number.isInteger(limit)||limit>100||(after!==undefined&&(typeof after!=='string'||!after))){res.status(400).json({code:'INVALID_QUERY',error:'Use a limit from 1 to 100 and a valid cursor.'});return;}

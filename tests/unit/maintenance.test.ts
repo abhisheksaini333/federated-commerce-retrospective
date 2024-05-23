@@ -75,3 +75,8 @@ test('audit response sequences are unique and newest first',()=>{
  assert.equal(validApiResponse('/api/audit',{events:[event,{...event,sequence:2}]}),false);
  assert.equal(validApiResponse('/api/audit',{events:[{...event,sequence:3},event]}),true);
 });
+
+test('misspelled order-list query filters are rejected',async()=>{
+ const app=createApp();const invalid=await request(app).get('/api/orders?staus=placed');assert.equal(invalid.status,400);
+ const valid=await request(app).get('/api/orders?status=placed&limit=10');assert.equal(valid.status,200);
+});
