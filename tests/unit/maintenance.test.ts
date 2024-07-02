@@ -80,3 +80,10 @@ test('misspelled order-list query filters are rejected',async()=>{
  const app=createApp();const invalid=await request(app).get('/api/orders?staus=placed');assert.equal(invalid.status,400);
  const valid=await request(app).get('/api/orders?status=placed&limit=10');assert.equal(valid.status,200);
 });
+
+test('inventory reasons reject control characters without changing stock',async()=>{
+ const app=createApp();const before=await request(app).get('/api/products');
+ assert.equal((await request(app).patch('/api/inventory/notebook').send({delta:1,reason:'bad\u0000'})).status,400);
+ assert.equal((await request(app).patch('/api/inventory/notebook/count').set('If-Match','"inventory-0"').send({stock:1,reason:'bad\nreason'})).status,400);
+ assert.deepEqual((await request(app).get('/api/products')).body,before.body);
+});
