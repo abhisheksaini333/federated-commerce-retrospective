@@ -87,3 +87,8 @@ test('inventory reasons reject control characters without changing stock',async(
  assert.equal((await request(app).patch('/api/inventory/notebook/count').set('If-Match','"inventory-0"').send({stock:1,reason:'bad\nreason'})).status,400);
  assert.deepEqual((await request(app).get('/api/products')).body,before.body);
 });
+
+test('inventory audit retains normalized operational reasons',async()=>{
+ const app=createApp();await request(app).patch('/api/inventory/notebook').send({delta:1,reason:' Shelf audit '});
+ const result=await request(app).get('/api/audit');assert.equal(result.body.events[0].details.reason,'Shelf audit');
+});

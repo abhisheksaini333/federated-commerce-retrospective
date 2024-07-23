@@ -200,7 +200,7 @@ export function createApp(options: AppOptions = {}) {
     if(expected!==`"inventory-${inventoryRevision}"`){res.status(412).json({code:'PRECONDITION_FAILED',error:'Inventory changed. Refresh before applying this count.'});return;}
     if(!object(req.body)||!exactKeys(req.body,['stock','reason'])||!Number.isSafeInteger(req.body.stock)||(req.body.stock as number)<0||typeof req.body.reason!=='string'||!req.body.reason.trim()||req.body.reason.length>140||/[\u0000-\u001f\u007f-\u009f]/.test(req.body.reason)){res.status(400).json({code:'INVALID_ADJUSTMENT',error:'Use a non-negative whole stock count and a short reason.'});return;}
     const priorStock=product.stock;product.stock=req.body.stock as number;inventoryRevision++;
-    audit('inventory_counted',product.id,{from:priorStock,to:product.stock});
+    audit('inventory_counted',product.id,{from:priorStock,to:product.stock,reason:req.body.reason.trim().normalize('NFC')});
     res.json({product,revision:inventoryRevision});
   });
   app.patch('/api/inventory/:id',(req,res)=>{
@@ -208,7 +208,7 @@ export function createApp(options: AppOptions = {}) {
     if(!product){res.status(404).json({code:'NOT_FOUND',error:'Product not found.'});return;}
     if(!object(req.body)||!exactKeys(req.body,['delta','reason'])||!Number.isInteger(req.body.delta)||req.body.delta===0||Math.abs(req.body.delta as number)>1000||typeof req.body.reason!=='string'||!req.body.reason.trim()||req.body.reason.length>140||/[\u0000-\u001f\u007f-\u009f]/.test(req.body.reason)||product.stock+(req.body.delta as number)<0||!Number.isSafeInteger(product.stock+(req.body.delta as number))){res.status(400).json({code:'INVALID_ADJUSTMENT',error:'Use a nonzero whole adjustment up to 1000 units and a short reason without making stock negative.'});return;}
     product.stock+=req.body.delta as number;inventoryRevision++;
-    audit('stock_adjusted',product.id,{delta:req.body.delta,stock:product.stock});
+    audit('stock_adjusted',product.id,{delta:req.body.delta,stock:product.stock,reason:req.body.reason.trim().normalize('NFC')});
     res.json({product,revision:inventoryRevision});
   });
   app.get('/api/orders/export.csv',(_req,res)=>{

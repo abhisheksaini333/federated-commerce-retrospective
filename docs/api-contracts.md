@@ -23,3 +23,5 @@ Checkout replays precede availability and revision checks. Original receipts are
 Inventory revisions advance only on accepted mutations. Absolute counts reject stale revisions; cancellation preflights every line and changes no state if any restock would overflow. Fulfilled orders cannot be cancelled. The demo store and metrics reset when the process restarts.
 
 Statistics sum stock and order values exactly before converting to JSON numbers. An aggregate outside the supported safe-integer range returns `503 AGGREGATE_OVERFLOW`, without modifying orders or inventory, rather than returning rounded counts or cents.
+
+Inventory audit details include the trimmed NFC-normalized adjustment reason for both count and delta changes. These events are available through the protected administrative audit endpoint.
