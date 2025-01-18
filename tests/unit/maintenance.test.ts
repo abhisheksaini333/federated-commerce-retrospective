@@ -92,3 +92,10 @@ test('inventory audit retains normalized operational reasons',async()=>{
  const app=createApp();await request(app).patch('/api/inventory/notebook').send({delta:1,reason:' Shelf audit '});
  const result=await request(app).get('/api/audit');assert.equal(result.body.events[0].details.reason,'Shelf audit');
 });
+
+test('inventory mutations return ETags for the next conditional update',async()=>{
+ const app=createApp();const delta=await request(app).patch('/api/inventory/notebook').send({delta:1,reason:'Count'});
+ assert.equal(delta.headers.etag,'"inventory-1"');
+ const count=await request(app).patch('/api/inventory/notebook/count').set('If-Match',delta.headers.etag).send({stock:10,reason:'Recount'});
+ assert.equal(count.status,200);assert.equal(count.headers.etag,'"inventory-2"');
+});
