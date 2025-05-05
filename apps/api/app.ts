@@ -249,7 +249,7 @@ export function createApp(options: AppOptions = {}) {
     }
     if(order.status!==nextStatus){order.version++;audit(nextStatus==='cancelled'?'order_cancelled':'order_fulfilled',order.id,{version:order.version});}
     order.status = nextStatus;
-    res.json({ order });
+    res.set('ETag', `"order-${order.version}"`).json({ order });
   });
   const allowedMethods: [RegExp, string][] = [
     [/^\/api\/inventory\/[^/]+(?:\/count)?$/, 'PATCH'],

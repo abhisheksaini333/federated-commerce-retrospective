@@ -99,3 +99,8 @@ test('inventory mutations return ETags for the next conditional update',async()=
  const count=await request(app).patch('/api/inventory/notebook/count').set('If-Match',delta.headers.etag).send({stock:10,reason:'Recount'});
  assert.equal(count.status,200);assert.equal(count.headers.etag,'"inventory-2"');
 });
+
+test('status mutation and replay return the current order ETag',async()=>{
+ const app=createApp();const created=await request(app).post('/api/checkout').set('Idempotency-Key','maintenance-order').send(payload);
+ for(let i=0;i<2;i++){const changed=await request(app).patch(`/api/orders/${created.body.order.id}`).send({status:'fulfilled'});assert.equal(changed.headers.etag,'"order-2"');}
+});
