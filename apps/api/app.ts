@@ -216,6 +216,7 @@ export function createApp(options: AppOptions = {}) {
     const rows=[['Order','Demo customer','Status','Total cents','Created at'],...[...orders.values()].map(order=>[order.id,order.customerName,order.status,order.totalCents,order.createdAt])];
     res.type('text/csv').set('Content-Disposition','attachment; filename="fieldwork-orders.csv"').send(rows.map(row=>row.map(cell).join(',')).join('\r\n')+'\r\n');
   });
+  app.all('/api/orders/export.csv',(_req,res)=>res.set('Allow','GET, HEAD').status(405).json({code:'METHOD_NOT_ALLOWED',error:'CSV export supports GET and HEAD.'}));
   app.get('/api/orders/:id'  , (req,res) => {
     const order=orders.get(req.params.id);
     if(!order){res.status(404).json({code:'NOT_FOUND',error:'Order not found.'});return;}

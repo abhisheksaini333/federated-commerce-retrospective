@@ -104,3 +104,8 @@ test('status mutation and replay return the current order ETag',async()=>{
  const app=createApp();const created=await request(app).post('/api/checkout').set('Idempotency-Key','maintenance-order').send(payload);
  for(let i=0;i<2;i++){const changed=await request(app).patch(`/api/orders/${created.body.order.id}`).send({status:'fulfilled'});assert.equal(changed.headers.etag,'"order-2"');}
 });
+
+test('CSV export advertises only retrieval methods',async()=>{
+ const result=await request(createApp()).patch('/api/orders/export.csv').send({status:'fulfilled'});
+ assert.equal(result.status,405);assert.equal(result.headers.allow,'GET, HEAD');
+});
