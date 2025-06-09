@@ -109,3 +109,8 @@ test('CSV export advertises only retrieval methods',async()=>{
  const result=await request(createApp()).patch('/api/orders/export.csv').send({status:'fulfilled'});
  assert.equal(result.status,405);assert.equal(result.headers.allow,'GET, HEAD');
 });
+
+test('duplicate view parameters are rejected as ambiguous navigation',async()=>{
+ const {routeView}=await import('../../apps/host/navigation');
+ assert.equal(routeView('?view=shop&view=admin'),null);assert.equal(routeView('?view=shop'),'shop');
+});
