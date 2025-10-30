@@ -6,7 +6,7 @@ export class ApiFailure extends Error {
 }
 
 let adminCapability="";
-export function setAdminCapability(value:string){adminCapability=value;}
+export function setAdminCapability(value:string){if(typeof value!=='string'||value!==''&&!/^[A-Za-z0-9_-]{16,256}$/.test(value))throw new ApiFailure('Enter a capability of 16–256 letters, digits, underscores or hyphens.',null,'INVALID_CAPABILITY');adminCapability=value;}
 export interface ApiOptions extends RequestInit { timeoutMs?: number }
 export async function api<T>(
   url: string,

@@ -48,7 +48,7 @@ export default function OrderDesk() {
       setBusy(previous=>{const next=new Set(previous);next.delete(id);return next;});
     }
   }
-  if(locked)return <section className="page-section"><h1>Unlock the order desk.</h1><p>The operator has enabled a local capability for administrative access.</p>{error&&<p role="alert">{error}</p>}<form onSubmit={event=>{event.preventDefault();setAdminCapability(token);setToken('');void refresh();}}><label>Admin capability <input type="password" autoComplete="off" value={token} onChange={event=>setToken(event.target.value)} required/></label><button className="button" disabled={loading}>Unlock order desk</button></form></section>;
+  if(locked)return <section className="page-section"><h1>Unlock the order desk.</h1><p>The operator has enabled a local capability for administrative access.</p>{error&&<p role="alert">{error}</p>}<form onSubmit={event=>{event.preventDefault();try{setAdminCapability(token);setToken('');void refresh();}catch(error){setError(error instanceof Error?error.message:'Invalid admin capability.');}}}><label>Admin capability <input type="password" autoComplete="off" value={token} onChange={event=>setToken(event.target.value)} required/></label><button className="button" disabled={loading}>Unlock order desk</button></form></section>;
   return (
     <section className="page-section">
       <div className="section-heading">

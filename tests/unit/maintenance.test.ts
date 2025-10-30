@@ -114,3 +114,9 @@ test('duplicate view parameters are rejected as ambiguous navigation',async()=>{
  const {routeView}=await import('../../apps/host/navigation');
  assert.equal(routeView('?view=shop&view=admin'),null);assert.equal(routeView('?view=shop'),'shop');
 });
+
+test('admin capability validation rejects unsafe headers locally',async()=>{
+ const {setAdminCapability}=await import('../../apps/host/api');
+ for(const value of ['short','bad\nheader','x'.repeat(257)])assert.throws(()=>setAdminCapability(value));
+ setAdminCapability('valid-local-capability');setAdminCapability('');
+});
