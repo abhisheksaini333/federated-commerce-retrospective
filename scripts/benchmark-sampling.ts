@@ -1,4 +1,5 @@
 export function sampleCount(args:string[]):number{
+ if(args.filter(value=>value==="--samples").length>1)throw new Error("Specify --samples only once");
  const i=args.indexOf("--samples");if(i<0)return 3;const raw=args[i+1];if(!raw||!/^\d+$/.test(raw)||Number(raw)<1||Number(raw)>50)throw new Error("--samples must be an integer in 1..50");return Number(raw);
 }
 export function sampleSchedule(count:number):{variant:"baseline"|"optimized";sample:number}[]{

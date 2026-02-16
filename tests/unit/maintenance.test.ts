@@ -120,3 +120,10 @@ test('admin capability validation rejects unsafe headers locally',async()=>{
  for(const value of ['short','bad\nheader','x'.repeat(257)])assert.throws(()=>setAdminCapability(value));
  setAdminCapability('valid-local-capability');setAdminCapability('');
 });
+
+test('benchmark options reject duplicate assignments before writing output',async()=>{
+ const {sampleCount}=await import('../../scripts/benchmark-sampling');
+ const {createRunDirectory}=await import('../../scripts/benchmark-output');
+ assert.throws(()=>sampleCount(['--samples','1','--samples','2']));
+ assert.throws(()=>createRunDirectory(['--output','/should-not-create','--output','/other']));
+});
