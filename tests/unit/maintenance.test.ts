@@ -127,3 +127,9 @@ test('benchmark options reject duplicate assignments before writing output',asyn
  assert.throws(()=>sampleCount(['--samples','1','--samples','2']));
  assert.throws(()=>createRunDirectory(['--output','/should-not-create','--output','/other']));
 });
+
+test('benchmark distributions retain finite means and medians at large magnitudes',async()=>{
+ const {distribution}=await import('../../scripts/benchmark-sampling');
+ const result=distribution([Number.MAX_VALUE,Number.MAX_VALUE]);
+ assert.equal(result.mean,Number.MAX_VALUE);assert.equal(result.median,Number.MAX_VALUE);
+});

@@ -8,6 +8,6 @@ export function sampleSchedule(count:number):{variant:"baseline"|"optimized";sam
 }
 export function distribution(values:number[]){
  if(!values.length||values.some(n=>!Number.isFinite(n)||n<0))throw new Error("Expected finite nonnegative observations");
- const sorted=[...values].sort((a,b)=>a-b),n=sorted.length,mean=sorted.reduce((a,b)=>a+b,0)/n;
- return {count:n,min:sorted[0],max:sorted[n-1],mean,median:n%2?sorted[(n-1)/2]:(sorted[n/2-1]+sorted[n/2])/2,p95:sorted[Math.ceil(n*.95)-1]};
+ const sorted=[...values].sort((a,b)=>a-b),n=sorted.length,mean=sorted.reduce((mean,value,index)=>mean+(value-mean)/(index+1),0);
+ return {count:n,min:sorted[0],max:sorted[n-1],mean,median:n%2?sorted[(n-1)/2]:sorted[n/2-1]+(sorted[n/2]-sorted[n/2-1])/2,p95:sorted[Math.ceil(n*.95)-1]};
 }
