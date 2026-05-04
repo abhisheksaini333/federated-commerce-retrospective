@@ -133,3 +133,8 @@ test('benchmark distributions retain finite means and medians at large magnitude
  const result=distribution([Number.MAX_VALUE,Number.MAX_VALUE]);
  assert.equal(result.mean,Number.MAX_VALUE);assert.equal(result.median,Number.MAX_VALUE);
 });
+
+test('catalog category names are searchable alongside product copy',async()=>{
+ const {matchesSearch}=await import('../../apps/catalog/search');
+ assert.equal(matchesSearch(seedProducts.find(product=>product.id==='pencil')!,'tools'),true);
+});

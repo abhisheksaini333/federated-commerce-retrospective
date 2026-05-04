@@ -25,3 +25,5 @@ Inventory revisions advance only on accepted mutations. Absolute counts reject s
 Statistics sum stock and order values exactly before converting to JSON numbers. An aggregate outside the supported safe-integer range returns `503 AGGREGATE_OVERFLOW`, without modifying orders or inventory, rather than returning rounded counts or cents.
 
 Inventory audit details include the trimmed NFC-normalized adjustment reason for both count and delta changes. These events are available through the protected administrative audit endpoint.
+
+Storefront search matches product names, descriptions and displayed category names using the same normalized case-insensitive policy.

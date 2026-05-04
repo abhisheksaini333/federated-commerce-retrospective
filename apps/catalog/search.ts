@@ -1,6 +1,6 @@
 import type {Product} from '../../packages/contracts';
 export const searchText=(value:string)=>value.normalize('NFC').trim().replace(/\s+/gu,' ').toLocaleLowerCase('en-US');
-export const matchesSearch=(product:Product,search:string)=>searchText(`${product.name} ${product.description}`).includes(searchText(search));
+export const matchesSearch=(product:Product,search:string)=>searchText(`${product.name} ${product.description} ${product.category}`).includes(searchText(search));
 
 export type SortOrder='featured'|'price-low'|'price-high'|'name';
 export function sortProducts(products:readonly Product[],order:SortOrder):Product[]{
