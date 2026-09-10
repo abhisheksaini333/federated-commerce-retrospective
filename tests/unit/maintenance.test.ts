@@ -138,3 +138,9 @@ test('catalog category names are searchable alongside product copy',async()=>{
  const {matchesSearch}=await import('../../apps/catalog/search');
  assert.equal(matchesSearch(seedProducts.find(product=>product.id==='pencil')!,'tools'),true);
 });
+
+test('safe storage removal remains authoritative when durable deletion fails',async()=>{
+ const {createSafeStorage}=await import('../../apps/host/storage');
+ const storage=createSafeStorage(()=>({getItem:()=> 'stale',setItem:()=>{},removeItem:()=>{throw Error('denied');}}));
+ storage.set('checkout','saved');storage.remove('checkout');assert.equal(storage.get('checkout'),null);
+});

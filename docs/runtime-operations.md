@@ -15,3 +15,5 @@ Use `npm run benchmark -- --output /absolute/path/to/a/new/run --samples 5`. The
 The host serves `/runtime-config.js` with the configured catalog/cart origins. The federation loader accepts only HTTP loopback remote entries at `/remoteEntry.js`, initializes the shared React scope once per container, and follows configured ports without rebuilding the host. No external remote registry is used.
 
 Browser fixture isolation: each test owns a fresh four-listener runtime and store. Worker 0 uses ports4310–4313, worker1 uses4320–4323, with a configurable `COMMERCE_TEST_PORT_BASE`. `COMMERCE_WORKERS=2 npm run test:e2e` verifies concurrent files without shared inventory. Test teardown drains listeners; all fresh screenshots use Playwright output paths.
+
+Completed and explicitly rejected checkout intents are removed from session storage. An in-memory deletion marker prevents stale durable values from returning when browser storage access fails.

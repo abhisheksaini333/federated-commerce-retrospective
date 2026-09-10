@@ -161,14 +161,14 @@ export default function App() {
       });
       acceptOrder(result.order);
     } catch (error) {
-      if(error instanceof ApiFailure && error.status && error.status>=400 && error.status<500 && error.code!=="INVALID_RESPONSE"){setPending(null);storage.set("checkout","null");}
+      if(error instanceof ApiFailure && error.status && error.status>=400 && error.status<500 && error.code!=="INVALID_RESPONSE"){setPending(null);storage.remove("checkout");}
       if(error instanceof ApiFailure){const field=error.issues.find(issue=>issue.path==='customerName');if(field){setNameError(field.message);setTimeout(()=>document.getElementById('demo-name')?.focus(),0);}}
       setCheckoutError((error as Error).message);
     } finally {
       setPlacing(false);
     }
   }
-  function acceptOrder(accepted:Order){storage.set('receipt',JSON.stringify(accepted));setOrder(accepted);setItems([]);setPending(null);storage.set('checkout','null');navigate('confirmation');void loadProducts();}
+  function acceptOrder(accepted:Order){storage.set('receipt',JSON.stringify(accepted));setOrder(accepted);setItems([]);setPending(null);storage.remove('checkout');navigate('confirmation');void loadProducts();}
   async function resolvePending(){
     if(!pending||placing)return;setPlacing(true);setCheckoutError('');
     try {const result=await api<{status:'unknown'|'accepted';order?:Order}>('/api/checkout/resolve',{method:'POST',headers:{'Idempotency-Key':pending.key},body:pending.fingerprint});
