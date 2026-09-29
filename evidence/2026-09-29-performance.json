@@ -1,0 +1,881 @@
+{
+  "measuredAt": "2026-09-29T12:41:42.745Z",
+  "environment": {
+    "node": "v25.7.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M3 Pro",
+    "chromium": "153.0.8010.12",
+    "viewport": "1440x1050",
+    "network": "Unthrottled loopback HTTP; no-store; fresh browser context per sample",
+    "sampleCountPerVariant": 3
+  },
+  "builds": {
+    "baseline": {
+      "wallMs": 2826,
+      "assetBytes": 268451,
+      "gzipBytes": 85569,
+      "assets": [
+        {
+          "file": "dist/baseline/cart/540.9da61f3f.js",
+          "bytes": 7067,
+          "gzipBytes": 2929
+        },
+        {
+          "file": "dist/baseline/cart/882.13621d18.js",
+          "bytes": 3389,
+          "gzipBytes": 1343
+        },
+        {
+          "file": "dist/baseline/cart/main.dff0c43a.js",
+          "bytes": 2922,
+          "gzipBytes": 1544
+        },
+        {
+          "file": "dist/baseline/cart/remoteEntry.js",
+          "bytes": 6171,
+          "gzipBytes": 3032
+        },
+        {
+          "file": "dist/baseline/catalog/540.1f688abc.js",
+          "bytes": 7073,
+          "gzipBytes": 2931
+        },
+        {
+          "file": "dist/baseline/catalog/560.6f8c5cec.js",
+          "bytes": 3384,
+          "gzipBytes": 1351
+        },
+        {
+          "file": "dist/baseline/catalog/main.4afd3e3d.js",
+          "bytes": 2934,
+          "gzipBytes": 1548
+        },
+        {
+          "file": "dist/baseline/catalog/remoteEntry.js",
+          "bytes": 6192,
+          "gzipBytes": 3033
+        },
+        {
+          "file": "dist/baseline/host/287.e18b7c7c.js",
+          "bytes": 89864,
+          "gzipBytes": 20601
+        },
+        {
+          "file": "dist/baseline/host/540.5c97389f.js",
+          "bytes": 7067,
+          "gzipBytes": 2930
+        },
+        {
+          "file": "dist/baseline/host/961.0be8d351.js",
+          "bytes": 123287,
+          "gzipBytes": 40188
+        },
+        {
+          "file": "dist/baseline/host/index.html",
+          "bytes": 446,
+          "gzipBytes": 299
+        },
+        {
+          "file": "dist/baseline/host/main.aa7fef20.js",
+          "bytes": 8655,
+          "gzipBytes": 3840
+        }
+      ]
+    },
+    "optimized": {
+      "wallMs": 2029,
+      "assetBytes": 268406,
+      "gzipBytes": 85556,
+      "assets": [
+        {
+          "file": "dist/optimized/cart/540.9da61f3f.js",
+          "bytes": 7067,
+          "gzipBytes": 2929
+        },
+        {
+          "file": "dist/optimized/cart/882.13621d18.js",
+          "bytes": 3389,
+          "gzipBytes": 1343
+        },
+        {
+          "file": "dist/optimized/cart/main.dff0c43a.js",
+          "bytes": 2922,
+          "gzipBytes": 1544
+        },
+        {
+          "file": "dist/optimized/cart/remoteEntry.js",
+          "bytes": 6171,
+          "gzipBytes": 3032
+        },
+        {
+          "file": "dist/optimized/catalog/540.1f688abc.js",
+          "bytes": 7073,
+          "gzipBytes": 2931
+        },
+        {
+          "file": "dist/optimized/catalog/560.6f8c5cec.js",
+          "bytes": 3384,
+          "gzipBytes": 1351
+        },
+        {
+          "file": "dist/optimized/catalog/main.4afd3e3d.js",
+          "bytes": 2934,
+          "gzipBytes": 1548
+        },
+        {
+          "file": "dist/optimized/catalog/remoteEntry.js",
+          "bytes": 6192,
+          "gzipBytes": 3033
+        },
+        {
+          "file": "dist/optimized/host/287.83d7dd5a.js",
+          "bytes": 89819,
+          "gzipBytes": 20591
+        },
+        {
+          "file": "dist/optimized/host/540.5c97389f.js",
+          "bytes": 7067,
+          "gzipBytes": 2930
+        },
+        {
+          "file": "dist/optimized/host/961.0be8d351.js",
+          "bytes": 123287,
+          "gzipBytes": 40188
+        },
+        {
+          "file": "dist/optimized/host/index.html",
+          "bytes": 446,
+          "gzipBytes": 298
+        },
+        {
+          "file": "dist/optimized/host/main.5a2d2ef3.js",
+          "bytes": 8655,
+          "gzipBytes": 3838
+        }
+      ]
+    }
+  },
+  "observations": [
+    {
+      "variant": "baseline",
+      "sample": 1,
+      "catalogReadyMs": 132.42583399999967,
+      "bagReadyMs": 71.33891700000004,
+      "startup": {
+        "fcpMs": 108,
+        "lcpMs": 108,
+        "resources": [
+          {
+            "url": "http://127.0.0.1:4310/main.aa7fef20.js",
+            "transferBytes": 8955,
+            "encodedBytes": 8655,
+            "durationMs": 4.699999809265137
+          },
+          {
+            "url": "http://127.0.0.1:4312/remoteEntry.js",
+            "transferBytes": 6471,
+            "encodedBytes": 6171,
+            "durationMs": 2.1000001430511475
+          },
+          {
+            "url": "http://127.0.0.1:4311/remoteEntry.js",
+            "transferBytes": 6492,
+            "encodedBytes": 6192,
+            "durationMs": 3.299999952316284
+          },
+          {
+            "url": "http://127.0.0.1:4310/287.e18b7c7c.js",
+            "transferBytes": 90164,
+            "encodedBytes": 89864,
+            "durationMs": 2.200000047683716
+          },
+          {
+            "url": "http://127.0.0.1:4310/540.5c97389f.js",
+            "transferBytes": 7367,
+            "encodedBytes": 7067,
+            "durationMs": 1.5
+          },
+          {
+            "url": "http://127.0.0.1:4310/961.0be8d351.js",
+            "transferBytes": 123587,
+            "encodedBytes": 123287,
+            "durationMs": 1.7000000476837158
+          },
+          {
+            "url": "http://127.0.0.1:4312/882.13621d18.js",
+            "transferBytes": 3689,
+            "encodedBytes": 3389,
+            "durationMs": 1.2000000476837158
+          },
+          {
+            "url": "http://127.0.0.1:4310/api/products",
+            "transferBytes": 1545,
+            "encodedBytes": 1245,
+            "durationMs": 2.700000047683716
+          },
+          {
+            "url": "http://127.0.0.1:4311/560.6f8c5cec.js",
+            "transferBytes": 3684,
+            "encodedBytes": 3384,
+            "durationMs": 1.4000000953674316
+          }
+        ]
+      },
+      "allResources": [
+        {
+          "url": "http://127.0.0.1:4310/main.aa7fef20.js",
+          "transferBytes": 8955,
+          "encodedBytes": 8655,
+          "durationMs": 4.699999809265137
+        },
+        {
+          "url": "http://127.0.0.1:4312/remoteEntry.js",
+          "transferBytes": 6471,
+          "encodedBytes": 6171,
+          "durationMs": 2.1000001430511475
+        },
+        {
+          "url": "http://127.0.0.1:4311/remoteEntry.js",
+          "transferBytes": 6492,
+          "encodedBytes": 6192,
+          "durationMs": 3.299999952316284
+        },
+        {
+          "url": "http://127.0.0.1:4310/287.e18b7c7c.js",
+          "transferBytes": 90164,
+          "encodedBytes": 89864,
+          "durationMs": 2.200000047683716
+        },
+        {
+          "url": "http://127.0.0.1:4310/540.5c97389f.js",
+          "transferBytes": 7367,
+          "encodedBytes": 7067,
+          "durationMs": 1.5
+        },
+        {
+          "url": "http://127.0.0.1:4310/961.0be8d351.js",
+          "transferBytes": 123587,
+          "encodedBytes": 123287,
+          "durationMs": 1.7000000476837158
+        },
+        {
+          "url": "http://127.0.0.1:4312/882.13621d18.js",
+          "transferBytes": 3689,
+          "encodedBytes": 3389,
+          "durationMs": 1.2000000476837158
+        },
+        {
+          "url": "http://127.0.0.1:4310/api/products",
+          "transferBytes": 1545,
+          "encodedBytes": 1245,
+          "durationMs": 2.700000047683716
+        },
+        {
+          "url": "http://127.0.0.1:4311/560.6f8c5cec.js",
+          "transferBytes": 3684,
+          "encodedBytes": 3384,
+          "durationMs": 1.4000000953674316
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "variant": "baseline",
+      "sample": 2,
+      "catalogReadyMs": 90.55116699999962,
+      "bagReadyMs": 65.89129099999991,
+      "startup": {
+        "fcpMs": 76,
+        "lcpMs": 76,
+        "resources": [
+          {
+            "url": "http://127.0.0.1:4310/main.aa7fef20.js",
+            "transferBytes": 8955,
+            "encodedBytes": 8655,
+            "durationMs": 3.8000001907348633
+          },
+          {
+            "url": "http://127.0.0.1:4312/remoteEntry.js",
+            "transferBytes": 6471,
+            "encodedBytes": 6171,
+            "durationMs": 1.6999998092651367
+          },
+          {
+            "url": "http://127.0.0.1:4311/remoteEntry.js",
+            "transferBytes": 6492,
+            "encodedBytes": 6192,
+            "durationMs": 1.7999999523162842
+          },
+          {
+            "url": "http://127.0.0.1:4310/287.e18b7c7c.js",
+            "transferBytes": 90164,
+            "encodedBytes": 89864,
+            "durationMs": 2.200000047683716
+          },
+          {
+            "url": "http://127.0.0.1:4310/540.5c97389f.js",
+            "transferBytes": 7367,
+            "encodedBytes": 7067,
+            "durationMs": 1.4000000953674316
+          },
+          {
+            "url": "http://127.0.0.1:4310/961.0be8d351.js",
+            "transferBytes": 123587,
+            "encodedBytes": 123287,
+            "durationMs": 1.6000001430511475
+          },
+          {
+            "url": "http://127.0.0.1:4312/882.13621d18.js",
+            "transferBytes": 3689,
+            "encodedBytes": 3389,
+            "durationMs": 1.3999998569488525
+          },
+          {
+            "url": "http://127.0.0.1:4310/api/products",
+            "transferBytes": 1545,
+            "encodedBytes": 1245,
+            "durationMs": 2.5999999046325684
+          },
+          {
+            "url": "http://127.0.0.1:4311/560.6f8c5cec.js",
+            "transferBytes": 3684,
+            "encodedBytes": 3384,
+            "durationMs": 1.7000000476837158
+          }
+        ]
+      },
+      "allResources": [
+        {
+          "url": "http://127.0.0.1:4310/main.aa7fef20.js",
+          "transferBytes": 8955,
+          "encodedBytes": 8655,
+          "durationMs": 3.8000001907348633
+        },
+        {
+          "url": "http://127.0.0.1:4312/remoteEntry.js",
+          "transferBytes": 6471,
+          "encodedBytes": 6171,
+          "durationMs": 1.6999998092651367
+        },
+        {
+          "url": "http://127.0.0.1:4311/remoteEntry.js",
+          "transferBytes": 6492,
+          "encodedBytes": 6192,
+          "durationMs": 1.7999999523162842
+        },
+        {
+          "url": "http://127.0.0.1:4310/287.e18b7c7c.js",
+          "transferBytes": 90164,
+          "encodedBytes": 89864,
+          "durationMs": 2.200000047683716
+        },
+        {
+          "url": "http://127.0.0.1:4310/540.5c97389f.js",
+          "transferBytes": 7367,
+          "encodedBytes": 7067,
+          "durationMs": 1.4000000953674316
+        },
+        {
+          "url": "http://127.0.0.1:4310/961.0be8d351.js",
+          "transferBytes": 123587,
+          "encodedBytes": 123287,
+          "durationMs": 1.6000001430511475
+        },
+        {
+          "url": "http://127.0.0.1:4312/882.13621d18.js",
+          "transferBytes": 3689,
+          "encodedBytes": 3389,
+          "durationMs": 1.3999998569488525
+        },
+        {
+          "url": "http://127.0.0.1:4310/api/products",
+          "transferBytes": 1545,
+          "encodedBytes": 1245,
+          "durationMs": 2.5999999046325684
+        },
+        {
+          "url": "http://127.0.0.1:4311/560.6f8c5cec.js",
+          "transferBytes": 3684,
+          "encodedBytes": 3384,
+          "durationMs": 1.7000000476837158
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "variant": "baseline",
+      "sample": 3,
+      "catalogReadyMs": 93.33337499999925,
+      "bagReadyMs": 61.91920800000025,
+      "startup": {
+        "fcpMs": 80,
+        "lcpMs": 80,
+        "resources": [
+          {
+            "url": "http://127.0.0.1:4310/main.aa7fef20.js",
+            "transferBytes": 8955,
+            "encodedBytes": 8655,
+            "durationMs": 3.9000000953674316
+          },
+          {
+            "url": "http://127.0.0.1:4312/remoteEntry.js",
+            "transferBytes": 6471,
+            "encodedBytes": 6171,
+            "durationMs": 1.9000000953674316
+          },
+          {
+            "url": "http://127.0.0.1:4311/remoteEntry.js",
+            "transferBytes": 6492,
+            "encodedBytes": 6192,
+            "durationMs": 1.7999999523162842
+          },
+          {
+            "url": "http://127.0.0.1:4310/287.e18b7c7c.js",
+            "transferBytes": 90164,
+            "encodedBytes": 89864,
+            "durationMs": 1.5999999046325684
+          },
+          {
+            "url": "http://127.0.0.1:4310/540.5c97389f.js",
+            "transferBytes": 7367,
+            "encodedBytes": 7067,
+            "durationMs": 1.5
+          },
+          {
+            "url": "http://127.0.0.1:4310/961.0be8d351.js",
+            "transferBytes": 123587,
+            "encodedBytes": 123287,
+            "durationMs": 1.7000000476837158
+          },
+          {
+            "url": "http://127.0.0.1:4312/882.13621d18.js",
+            "transferBytes": 3689,
+            "encodedBytes": 3389,
+            "durationMs": 1.5
+          },
+          {
+            "url": "http://127.0.0.1:4310/api/products",
+            "transferBytes": 1545,
+            "encodedBytes": 1245,
+            "durationMs": 3.4000000953674316
+          },
+          {
+            "url": "http://127.0.0.1:4311/560.6f8c5cec.js",
+            "transferBytes": 3684,
+            "encodedBytes": 3384,
+            "durationMs": 2.1999998092651367
+          }
+        ]
+      },
+      "allResources": [
+        {
+          "url": "http://127.0.0.1:4310/main.aa7fef20.js",
+          "transferBytes": 8955,
+          "encodedBytes": 8655,
+          "durationMs": 3.9000000953674316
+        },
+        {
+          "url": "http://127.0.0.1:4312/remoteEntry.js",
+          "transferBytes": 6471,
+          "encodedBytes": 6171,
+          "durationMs": 1.9000000953674316
+        },
+        {
+          "url": "http://127.0.0.1:4311/remoteEntry.js",
+          "transferBytes": 6492,
+          "encodedBytes": 6192,
+          "durationMs": 1.7999999523162842
+        },
+        {
+          "url": "http://127.0.0.1:4310/287.e18b7c7c.js",
+          "transferBytes": 90164,
+          "encodedBytes": 89864,
+          "durationMs": 1.5999999046325684
+        },
+        {
+          "url": "http://127.0.0.1:4310/540.5c97389f.js",
+          "transferBytes": 7367,
+          "encodedBytes": 7067,
+          "durationMs": 1.5
+        },
+        {
+          "url": "http://127.0.0.1:4310/961.0be8d351.js",
+          "transferBytes": 123587,
+          "encodedBytes": 123287,
+          "durationMs": 1.7000000476837158
+        },
+        {
+          "url": "http://127.0.0.1:4312/882.13621d18.js",
+          "transferBytes": 3689,
+          "encodedBytes": 3389,
+          "durationMs": 1.5
+        },
+        {
+          "url": "http://127.0.0.1:4310/api/products",
+          "transferBytes": 1545,
+          "encodedBytes": 1245,
+          "durationMs": 3.4000000953674316
+        },
+        {
+          "url": "http://127.0.0.1:4311/560.6f8c5cec.js",
+          "transferBytes": 3684,
+          "encodedBytes": 3384,
+          "durationMs": 2.1999998092651367
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "variant": "optimized",
+      "sample": 1,
+      "catalogReadyMs": 84.77545800000007,
+      "bagReadyMs": 115.32837499999914,
+      "startup": {
+        "fcpMs": 72,
+        "lcpMs": 72,
+        "resources": [
+          {
+            "url": "http://127.0.0.1:4310/main.5a2d2ef3.js",
+            "transferBytes": 8955,
+            "encodedBytes": 8655,
+            "durationMs": 4.199999809265137
+          },
+          {
+            "url": "http://127.0.0.1:4311/remoteEntry.js",
+            "transferBytes": 6492,
+            "encodedBytes": 6192,
+            "durationMs": 2.799999952316284
+          },
+          {
+            "url": "http://127.0.0.1:4312/remoteEntry.js",
+            "transferBytes": 6471,
+            "encodedBytes": 6171,
+            "durationMs": 3
+          },
+          {
+            "url": "http://127.0.0.1:4310/287.83d7dd5a.js",
+            "transferBytes": 90119,
+            "encodedBytes": 89819,
+            "durationMs": 3.0999999046325684
+          },
+          {
+            "url": "http://127.0.0.1:4310/540.5c97389f.js",
+            "transferBytes": 7367,
+            "encodedBytes": 7067,
+            "durationMs": 1.5
+          },
+          {
+            "url": "http://127.0.0.1:4310/961.0be8d351.js",
+            "transferBytes": 123587,
+            "encodedBytes": 123287,
+            "durationMs": 1.9000000953674316
+          },
+          {
+            "url": "http://127.0.0.1:4310/api/products",
+            "transferBytes": 1545,
+            "encodedBytes": 1245,
+            "durationMs": 4.199999809265137
+          },
+          {
+            "url": "http://127.0.0.1:4311/560.6f8c5cec.js",
+            "transferBytes": 3684,
+            "encodedBytes": 3384,
+            "durationMs": 1.3000001907348633
+          }
+        ]
+      },
+      "allResources": [
+        {
+          "url": "http://127.0.0.1:4310/main.5a2d2ef3.js",
+          "transferBytes": 8955,
+          "encodedBytes": 8655,
+          "durationMs": 4.199999809265137
+        },
+        {
+          "url": "http://127.0.0.1:4311/remoteEntry.js",
+          "transferBytes": 6492,
+          "encodedBytes": 6192,
+          "durationMs": 2.799999952316284
+        },
+        {
+          "url": "http://127.0.0.1:4312/remoteEntry.js",
+          "transferBytes": 6471,
+          "encodedBytes": 6171,
+          "durationMs": 3
+        },
+        {
+          "url": "http://127.0.0.1:4310/287.83d7dd5a.js",
+          "transferBytes": 90119,
+          "encodedBytes": 89819,
+          "durationMs": 3.0999999046325684
+        },
+        {
+          "url": "http://127.0.0.1:4310/540.5c97389f.js",
+          "transferBytes": 7367,
+          "encodedBytes": 7067,
+          "durationMs": 1.5
+        },
+        {
+          "url": "http://127.0.0.1:4310/961.0be8d351.js",
+          "transferBytes": 123587,
+          "encodedBytes": 123287,
+          "durationMs": 1.9000000953674316
+        },
+        {
+          "url": "http://127.0.0.1:4310/api/products",
+          "transferBytes": 1545,
+          "encodedBytes": 1245,
+          "durationMs": 4.199999809265137
+        },
+        {
+          "url": "http://127.0.0.1:4311/560.6f8c5cec.js",
+          "transferBytes": 3684,
+          "encodedBytes": 3384,
+          "durationMs": 1.3000001907348633
+        },
+        {
+          "url": "http://127.0.0.1:4312/882.13621d18.js",
+          "transferBytes": 3689,
+          "encodedBytes": 3389,
+          "durationMs": 2.5
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "variant": "optimized",
+      "sample": 2,
+      "catalogReadyMs": 144.25266699999884,
+      "bagReadyMs": 132.29791699999987,
+      "startup": {
+        "fcpMs": 104,
+        "lcpMs": 104,
+        "resources": [
+          {
+            "url": "http://127.0.0.1:4310/main.5a2d2ef3.js",
+            "transferBytes": 8955,
+            "encodedBytes": 8655,
+            "durationMs": 10.400000095367432
+          },
+          {
+            "url": "http://127.0.0.1:4311/remoteEntry.js",
+            "transferBytes": 6492,
+            "encodedBytes": 6192,
+            "durationMs": 3.3999998569488525
+          },
+          {
+            "url": "http://127.0.0.1:4312/remoteEntry.js",
+            "transferBytes": 6471,
+            "encodedBytes": 6171,
+            "durationMs": 3.299999952316284
+          },
+          {
+            "url": "http://127.0.0.1:4310/287.83d7dd5a.js",
+            "transferBytes": 90119,
+            "encodedBytes": 89819,
+            "durationMs": 3.5
+          },
+          {
+            "url": "http://127.0.0.1:4310/540.5c97389f.js",
+            "transferBytes": 7367,
+            "encodedBytes": 7067,
+            "durationMs": 2.3999998569488525
+          },
+          {
+            "url": "http://127.0.0.1:4310/961.0be8d351.js",
+            "transferBytes": 123587,
+            "encodedBytes": 123287,
+            "durationMs": 3.700000047683716
+          },
+          {
+            "url": "http://127.0.0.1:4310/api/products",
+            "transferBytes": 1545,
+            "encodedBytes": 1245,
+            "durationMs": 2.8999998569488525
+          },
+          {
+            "url": "http://127.0.0.1:4311/560.6f8c5cec.js",
+            "transferBytes": 3684,
+            "encodedBytes": 3384,
+            "durationMs": 1.9000000953674316
+          }
+        ]
+      },
+      "allResources": [
+        {
+          "url": "http://127.0.0.1:4310/main.5a2d2ef3.js",
+          "transferBytes": 8955,
+          "encodedBytes": 8655,
+          "durationMs": 10.400000095367432
+        },
+        {
+          "url": "http://127.0.0.1:4311/remoteEntry.js",
+          "transferBytes": 6492,
+          "encodedBytes": 6192,
+          "durationMs": 3.3999998569488525
+        },
+        {
+          "url": "http://127.0.0.1:4312/remoteEntry.js",
+          "transferBytes": 6471,
+          "encodedBytes": 6171,
+          "durationMs": 3.299999952316284
+        },
+        {
+          "url": "http://127.0.0.1:4310/287.83d7dd5a.js",
+          "transferBytes": 90119,
+          "encodedBytes": 89819,
+          "durationMs": 3.5
+        },
+        {
+          "url": "http://127.0.0.1:4310/540.5c97389f.js",
+          "transferBytes": 7367,
+          "encodedBytes": 7067,
+          "durationMs": 2.3999998569488525
+        },
+        {
+          "url": "http://127.0.0.1:4310/961.0be8d351.js",
+          "transferBytes": 123587,
+          "encodedBytes": 123287,
+          "durationMs": 3.700000047683716
+        },
+        {
+          "url": "http://127.0.0.1:4310/api/products",
+          "transferBytes": 1545,
+          "encodedBytes": 1245,
+          "durationMs": 2.8999998569488525
+        },
+        {
+          "url": "http://127.0.0.1:4311/560.6f8c5cec.js",
+          "transferBytes": 3684,
+          "encodedBytes": 3384,
+          "durationMs": 1.9000000953674316
+        },
+        {
+          "url": "http://127.0.0.1:4312/882.13621d18.js",
+          "transferBytes": 3689,
+          "encodedBytes": 3389,
+          "durationMs": 4.799999952316284
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "variant": "optimized",
+      "sample": 3,
+      "catalogReadyMs": 106.67062499999884,
+      "bagReadyMs": 117.51258299999972,
+      "startup": {
+        "fcpMs": 88,
+        "lcpMs": 88,
+        "resources": [
+          {
+            "url": "http://127.0.0.1:4310/main.5a2d2ef3.js",
+            "transferBytes": 8955,
+            "encodedBytes": 8655,
+            "durationMs": 4.900000095367432
+          },
+          {
+            "url": "http://127.0.0.1:4311/remoteEntry.js",
+            "transferBytes": 6492,
+            "encodedBytes": 6192,
+            "durationMs": 3
+          },
+          {
+            "url": "http://127.0.0.1:4312/remoteEntry.js",
+            "transferBytes": 6471,
+            "encodedBytes": 6171,
+            "durationMs": 3.5999999046325684
+          },
+          {
+            "url": "http://127.0.0.1:4310/287.83d7dd5a.js",
+            "transferBytes": 90119,
+            "encodedBytes": 89819,
+            "durationMs": 3.0999999046325684
+          },
+          {
+            "url": "http://127.0.0.1:4310/540.5c97389f.js",
+            "transferBytes": 7367,
+            "encodedBytes": 7067,
+            "durationMs": 2.0999999046325684
+          },
+          {
+            "url": "http://127.0.0.1:4310/961.0be8d351.js",
+            "transferBytes": 123587,
+            "encodedBytes": 123287,
+            "durationMs": 2.5999999046325684
+          },
+          {
+            "url": "http://127.0.0.1:4310/api/products",
+            "transferBytes": 1545,
+            "encodedBytes": 1245,
+            "durationMs": 9.399999856948853
+          },
+          {
+            "url": "http://127.0.0.1:4311/560.6f8c5cec.js",
+            "transferBytes": 3684,
+            "encodedBytes": 3384,
+            "durationMs": 2.799999952316284
+          }
+        ]
+      },
+      "allResources": [
+        {
+          "url": "http://127.0.0.1:4310/main.5a2d2ef3.js",
+          "transferBytes": 8955,
+          "encodedBytes": 8655,
+          "durationMs": 4.900000095367432
+        },
+        {
+          "url": "http://127.0.0.1:4311/remoteEntry.js",
+          "transferBytes": 6492,
+          "encodedBytes": 6192,
+          "durationMs": 3
+        },
+        {
+          "url": "http://127.0.0.1:4312/remoteEntry.js",
+          "transferBytes": 6471,
+          "encodedBytes": 6171,
+          "durationMs": 3.5999999046325684
+        },
+        {
+          "url": "http://127.0.0.1:4310/287.83d7dd5a.js",
+          "transferBytes": 90119,
+          "encodedBytes": 89819,
+          "durationMs": 3.0999999046325684
+        },
+        {
+          "url": "http://127.0.0.1:4310/540.5c97389f.js",
+          "transferBytes": 7367,
+          "encodedBytes": 7067,
+          "durationMs": 2.0999999046325684
+        },
+        {
+          "url": "http://127.0.0.1:4310/961.0be8d351.js",
+          "transferBytes": 123587,
+          "encodedBytes": 123287,
+          "durationMs": 2.5999999046325684
+        },
+        {
+          "url": "http://127.0.0.1:4310/api/products",
+          "transferBytes": 1545,
+          "encodedBytes": 1245,
+          "durationMs": 9.399999856948853
+        },
+        {
+          "url": "http://127.0.0.1:4311/560.6f8c5cec.js",
+          "transferBytes": 3684,
+          "encodedBytes": 3384,
+          "durationMs": 2.799999952316284
+        },
+        {
+          "url": "http://127.0.0.1:4312/882.13621d18.js",
+          "transferBytes": 3689,
+          "encodedBytes": 3389,
+          "durationMs": 1.5999999046325684
+        }
+      ],
+      "pageErrors": []
+    }
+  ]
+}

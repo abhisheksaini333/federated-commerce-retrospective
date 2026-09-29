@@ -1,0 +1,74 @@
+
+> federated-commerce-retrospective@1.0.0 verify
+> npm run typecheck && npm test && npm run build && npm run test:e2e
+
+
+> federated-commerce-retrospective@1.0.0 typecheck
+> tsc --noEmit
+
+
+> federated-commerce-retrospective@1.0.0 test
+> tsx --test tests/unit/*.test.ts
+
+✔ catalog exposes synthetic products with integer cents and fresh stock (17.275667ms)
+✔ checkout computes authoritative totals, decrements stock and records the order (13.473958ms)
+✔ concurrent identical retries create one order and decrement stock once (5.326667ms)
+✔ same key with changed payload is rejected (2.563667ms)
+✔ semantically identical object key ordering replays the original order (2.42725ms)
+✔ equivalent item ordering replays the original order (11.767459ms)
+✔ rejects invalid quantities, unknown products, duplicates, invalid shipping and forged prices (9.280375ms)
+✔ requires a bounded idempotency key (2.196417ms)
+✔ stock conflict cannot create a partial order (2.457083ms)
+✔ admin can fulfill an order, repeated fulfillment is harmless, invalid transitions fail (4.389125ms)
+✔ invalid JSON and oversized bodies return bounded structured errors (2.369584ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 421.681667
+
+> federated-commerce-retrospective@1.0.0 build
+> webpack --config webpack.config.cjs --mode production
+
+host:
+  5 assets
+  49 modules
+  host (webpack 5.111.1) compiled successfully in 1671 ms
+
+catalog:
+  4 assets
+  30 modules
+  catalog (webpack 5.111.1) compiled successfully in 923 ms
+
+cart:
+  4 assets
+  30 modules
+  cart (webpack 5.111.1) compiled successfully in 921 ms
+
+> federated-commerce-retrospective@1.0.0 test:e2e
+> playwright test
+
+[WebServer] (node:94750) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:94752) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 10 tests using 1 worker
+
+(node:94760) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chromium] › tests/e2e/storefront.spec.ts:3:5 › synthetic catalog to checkout to fulfilled order (1.1s)
+  ✓   2 [chromium] › tests/e2e/storefront.spec.ts:26:5 › catalog filters, search and bag removal work without navigation (397ms)
+  ✓   3 [chromium] › tests/e2e/storefront.spec.ts:48:5 › in-flight checkout locks navigation until the response settles (337ms)
+  ✓   4 [chromium] › tests/e2e/storefront.spec.ts:94:5 › unavailable catalog remote leaves shell and bag useful, reload recovers (416ms)
+  ✓   5 [chromium] › tests/e2e/storefront.spec.ts:114:5 › unavailable cart remote offers saved bag summary and recovery (309ms)
+  ✓   6 [chromium] › tests/e2e/storefront.spec.ts:135:5 › API outage has visible retry and recovers without a full page reload (310ms)
+  ✓   7 [chromium] › tests/e2e/storefront.spec.ts:159:7 › lost checkout response retries the same key and creates exactly one order (400ms)
+  ✓   8 [chromium] › tests/e2e/storefront.spec.ts:159:7 › lost checkout response retries the same key and creates exactly one order with storage disabled (402ms)
+  ✓   9 [chromium] › tests/e2e/storefront.spec.ts:199:5 › mobile layout fits the viewport and preserves accessible shopping controls (278ms)
+  ✓  10 [chromium] › tests/e2e/storefront.spec.ts:218:5 › desktop storefront has no uncaught errors on the healthy path (487ms)
+
+  10 passed (6.1s)

@@ -1,0 +1,1 @@
+Fieldwork Supply (optimized): http://127.0.0.1:4310 | catalog :4311 | cart :4312 | API :4313. Synthetic local demo.

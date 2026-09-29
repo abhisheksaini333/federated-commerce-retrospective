@@ -1,0 +1,14 @@
+host:
+  5 assets
+  49 modules
+  host (webpack 5.111.1) compiled successfully in 2107 ms
+
+catalog:
+  4 assets
+  30 modules
+  catalog (webpack 5.111.1) compiled successfully in 1330 ms
+
+cart:
+  4 assets
+  30 modules
+  cart (webpack 5.111.1) compiled successfully in 1306 ms

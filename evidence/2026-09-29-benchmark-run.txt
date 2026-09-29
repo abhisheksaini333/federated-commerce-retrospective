@@ -1,0 +1,5 @@
+
+> federated-commerce-retrospective@1.0.0 benchmark
+> tsx scripts/benchmark.ts
+
+Wrote evidence/2026-09-29-performance.json. 6 page observations; both variants completed without page errors.

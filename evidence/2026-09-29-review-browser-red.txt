@@ -1,0 +1,57 @@
+
+> federated-commerce-retrospective@1.0.0 test:e2e
+> playwright test --grep in-flight checkout
+
+[WebServer] (node:94121) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:94123) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:94129) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chromium] › tests/e2e/storefront.spec.ts:48:5 › in-flight checkout locks navigation until the response settles (6.7s)
+
+
+  1) [chromium] › tests/e2e/storefront.spec.ts:48:5 › in-flight checkout locks navigation until the response settles
+
+    Error: expect(locator).toBeDisabled() failed
+
+    Locator:  getByRole('button', { name: 'Shop', exact: true })
+    Expected: disabled
+    Received: enabled
+    Timeout:  6000ms
+
+    Call log:
+      - Expect "toBeDisabled" getByRole('button', { name: 'Shop', exact: true }) with timeout 6000ms
+      - waiting for getByRole('button', { name: 'Shop', exact: true })
+        16 × locator resolved to <button class="">Shop</button>
+           - unexpected value "enabled"
+
+
+      61 |   try {
+      62 |     await expect(page.getByRole('button', { name: 'Placing your demo order…' })).toBeDisabled();
+    > 63 |     await expect(page.getByRole('button', { name: 'Shop', exact: true })).toBeDisabled();
+         |                                                                           ^
+      64 |     await expect(page.getByRole('button', { name: 'Order desk' })).toBeDisabled();
+      65 |     await expect(page.getByRole('button', { name: 'Bag (1)' })).toBeDisabled();
+      66 |     await expect(page.getByRole('button', { name: 'Fieldwork Supply home' })).toBeDisabled();
+        at /Users/abhishek/Documents/datavedam/federated-commerce-retrospective/tests/e2e/storefront.spec.ts:63:75
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/storefront-in-flight-check-570fe--until-the-response-settles-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/storefront-in-flight-check-570fe--until-the-response-settles-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/storefront-in-flight-check-570fe--until-the-response-settles-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/storefront-in-flight-check-570fe--until-the-response-settles-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests/e2e/storefront.spec.ts:48:5 › in-flight checkout locks navigation until the response settles

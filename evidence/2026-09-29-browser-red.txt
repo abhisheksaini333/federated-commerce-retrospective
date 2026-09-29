@@ -1,0 +1,337 @@
+
+> federated-commerce-retrospective@1.0.0 test:e2e
+> playwright test --timeout=4000
+
+[WebServer] (node:82765) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:82766) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 8 tests using 1 worker
+
+(node:82772) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chromium] › tests/e2e/storefront.spec.ts:3:5 › synthetic catalog to checkout to fulfilled order (4.2s)
+(node:82792) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 [chromium] › tests/e2e/storefront.spec.ts:22:5 › catalog filters, search and bag removal work without navigation (4.1s)
+(node:82823) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  3 [chromium] › tests/e2e/storefront.spec.ts:36:5 › unavailable catalog remote leaves shell and bag useful, reload recovers (4.1s)
+(node:82842) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  4 [chromium] › tests/e2e/storefront.spec.ts:48:5 › unavailable cart remote offers saved bag summary and recovery (4.1s)
+(node:82888) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  5 [chromium] › tests/e2e/storefront.spec.ts:61:5 › API outage has visible retry and recovers without a full page reload (4.1s)
+(node:82983) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  6 [chromium] › tests/e2e/storefront.spec.ts:70:5 › lost checkout response retries the same key and creates exactly one order (4.1s)
+(node:83004) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  7 [chromium] › tests/e2e/storefront.spec.ts:91:5 › mobile layout fits the viewport and preserves accessible shopping controls (4.1s)
+(node:83097) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  8 [chromium] › tests/e2e/storefront.spec.ts:99:5 › desktop storefront has no uncaught errors on the healthy path (4.1s)
+
+
+  1) [chromium] › tests/e2e/storefront.spec.ts:3:5 › synthetic catalog to checkout to fulfilled order
+
+    Test timeout of 4000ms exceeded.
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: 'Good things, for everyday.' })
+    Expected: visible
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('heading', { name: 'Good things, for everyday.' }) with timeout 6000ms
+      - waiting for getByRole('heading', { name: 'Good things, for everyday.' })
+      - Test timeout of 4000ms exceeded.
+
+
+      3 | test('synthetic catalog to checkout to fulfilled order', async ({ page }) => {
+      4 |   await page.goto('/');
+    > 5 |   await expect(page.getByRole('heading', { name: 'Good things, for everyday.' })).toBeVisible();
+        |                                                                                   ^
+      6 |   await page.getByRole('button', { name: 'Add Everyday notebook' }).click();
+      7 |   await page.getByRole('button', { name: 'Bag (1)' }).click();
+      8 |   await page.getByLabel('Quantity for Everyday notebook').selectOption('2');
+        at /Users/abhishek/Documents/datavedam/federated-commerce-retrospective/tests/e2e/storefront.spec.ts:5:83
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/storefront-synthetic-catalog-to-checkout-to-fulfilled-order-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/storefront-synthetic-catalog-to-checkout-to-fulfilled-order-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/storefront-synthetic-catalog-to-checkout-to-fulfilled-order-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/storefront-synthetic-catalog-to-checkout-to-fulfilled-order-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests/e2e/storefront.spec.ts:22:5 › catalog filters, search and bag removal work without navigation
+
+    Test timeout of 4000ms exceeded.
+
+    Error: locator.click: Test timeout of 4000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: 'Carry', exact: true })
+
+
+      22 | test('catalog filters, search and bag removal work without navigation', async ({ page }) => {
+      23 |   await page.goto('/');
+    > 24 |   await page.getByRole('button', { name: 'Carry', exact: true }).click();
+         |                                                                  ^
+      25 |   await expect(page.getByRole('button', { name: 'Add Sunday carryall' })).toBeVisible();
+      26 |   await expect(page.getByRole('button', { name: 'Add Everyday notebook' })).toHaveCount(0);
+      27 |   await page.getByLabel('Search the collection').fill('nonexistent');
+        at /Users/abhishek/Documents/datavedam/federated-commerce-retrospective/tests/e2e/storefront.spec.ts:24:66
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/storefront-catalog-filters-1632b-val-work-without-navigation-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/storefront-catalog-filters-1632b-val-work-without-navigation-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/storefront-catalog-filters-1632b-val-work-without-navigation-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/storefront-catalog-filters-1632b-val-work-without-navigation-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › tests/e2e/storefront.spec.ts:36:5 › unavailable catalog remote leaves shell and bag useful, reload recovers
+
+    Test timeout of 4000ms exceeded.
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: 'The collection is taking a moment.' })
+    Expected: visible
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('heading', { name: 'The collection is taking a moment.' }) with timeout 6000ms
+      - waiting for getByRole('heading', { name: 'The collection is taking a moment.' })
+      - Test timeout of 4000ms exceeded.
+
+
+      37 |   await page.route('http://127.0.0.1:4311/**', route => route.abort());
+      38 |   await page.goto('/');
+    > 39 |   await expect(page.getByRole('heading', { name: 'The collection is taking a moment.' })).toBeVisible();
+         |                                                                                           ^
+      40 |   await page.getByRole('button', { name: 'Bag (0)' }).click();
+      41 |   await expect(page.getByText('Your next everyday favorite is waiting.')).toBeVisible();
+      42 |   await page.getByRole('button', { name: 'Shop', exact: true }).click();
+        at /Users/abhishek/Documents/datavedam/federated-commerce-retrospective/tests/e2e/storefront.spec.ts:39:91
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/storefront-unavailable-cat-946ad--bag-useful-reload-recovers-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/storefront-unavailable-cat-946ad--bag-useful-reload-recovers-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/storefront-unavailable-cat-946ad--bag-useful-reload-recovers-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/storefront-unavailable-cat-946ad--bag-useful-reload-recovers-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chromium] › tests/e2e/storefront.spec.ts:48:5 › unavailable cart remote offers saved bag summary and recovery
+
+    Test timeout of 4000ms exceeded.
+
+    Error: locator.click: Test timeout of 4000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: 'Add Everyday notebook' })
+
+
+      49 |   await page.route('http://127.0.0.1:4312/**', route => route.abort());
+      50 |   await page.goto('/');
+    > 51 |   await page.getByRole('button', { name: 'Add Everyday notebook' }).click();
+         |                                                                     ^
+      52 |   await page.getByRole('button', { name: 'Bag (1)' }).click();
+      53 |   await expect(page.getByRole('heading', { name: 'Your bag is saved.' })).toBeVisible();
+      54 |   await expect(page.getByText('1 item · $24.00')).toBeVisible();
+        at /Users/abhishek/Documents/datavedam/federated-commerce-retrospective/tests/e2e/storefront.spec.ts:51:69
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/storefront-unavailable-car-f24ab-ed-bag-summary-and-recovery-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/storefront-unavailable-car-f24ab-ed-bag-summary-and-recovery-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/storefront-unavailable-car-f24ab-ed-bag-summary-and-recovery-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/storefront-unavailable-car-f24ab-ed-bag-summary-and-recovery-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [chromium] › tests/e2e/storefront.spec.ts:61:5 › API outage has visible retry and recovers without a full page reload
+
+    Test timeout of 4000ms exceeded.
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByRole('alert')
+    Expected substring: "Demo catalog service is offline."
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toContainText" getByRole('alert') with timeout 6000ms
+      - waiting for getByRole('alert')
+      - Test timeout of 4000ms exceeded.
+
+
+      62 |   await page.route('**/api/products', route => route.fulfill({ status: 503, json: { error: 'Demo catalog service is offline.', code: 'API_UNAVAILABLE' } }));
+      63 |   await page.goto('/');
+    > 64 |   await expect(page.getByRole('alert')).toContainText('Demo catalog service is offline.');
+         |                                         ^
+      65 |   await page.unroute('**/api/products');
+      66 |   await page.getByRole('button', { name: 'Try again' }).click();
+      67 |   await expect(page.getByRole('button', { name: 'Add Everyday notebook' })).toBeVisible();
+        at /Users/abhishek/Documents/datavedam/federated-commerce-retrospective/tests/e2e/storefront.spec.ts:64:41
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/storefront-API-outage-has--5d65b--without-a-full-page-reload-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/storefront-API-outage-has--5d65b--without-a-full-page-reload-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/storefront-API-outage-has--5d65b--without-a-full-page-reload-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/storefront-API-outage-has--5d65b--without-a-full-page-reload-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [chromium] › tests/e2e/storefront.spec.ts:70:5 › lost checkout response retries the same key and creates exactly one order
+
+    Test timeout of 4000ms exceeded.
+
+    Error: locator.click: Test timeout of 4000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: 'Add Everyday notebook' })
+
+
+      77 |   });
+      78 |   await page.goto('/');
+    > 79 |   await page.getByRole('button', { name: 'Add Everyday notebook' }).click();
+         |                                                                     ^
+      80 |   await page.getByRole('button', { name: 'Bag (1)' }).click();
+      81 |   await page.getByRole('button', { name: 'Continue to checkout' }).click();
+      82 |   await page.getByRole('button', { name: 'Place demo order' }).click();
+        at /Users/abhishek/Documents/datavedam/federated-commerce-retrospective/tests/e2e/storefront.spec.ts:79:69
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/storefront-lost-checkout-r-73064-d-creates-exactly-one-order-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/storefront-lost-checkout-r-73064-d-creates-exactly-one-order-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/storefront-lost-checkout-r-73064-d-creates-exactly-one-order-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/storefront-lost-checkout-r-73064-d-creates-exactly-one-order-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7) [chromium] › tests/e2e/storefront.spec.ts:91:5 › mobile layout fits the viewport and preserves accessible shopping controls
+
+    Test timeout of 4000ms exceeded.
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('button', { name: 'Add Everyday notebook' })
+    Expected: visible
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('button', { name: 'Add Everyday notebook' }) with timeout 6000ms
+      - waiting for getByRole('button', { name: 'Add Everyday notebook' })
+      - Protocol error (Runtime.callFunctionOn): Internal server error, session closed.
+
+
+      92 |   await page.setViewportSize({ width: 390, height: 844 });
+      93 |   await page.goto('/');
+    > 94 |   await expect(page.getByRole('button', { name: 'Add Everyday notebook' })).toBeVisible();
+         |                                                                             ^
+      95 |   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+      96 |   await page.screenshot({ path: 'evidence/2026-09-29-mobile.png', fullPage: true });
+      97 | });
+        at /Users/abhishek/Documents/datavedam/federated-commerce-retrospective/tests/e2e/storefront.spec.ts:94:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/storefront-mobile-layout-f-731b2-ccessible-shopping-controls-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/storefront-mobile-layout-f-731b2-ccessible-shopping-controls-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/storefront-mobile-layout-f-731b2-ccessible-shopping-controls-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/storefront-mobile-layout-f-731b2-ccessible-shopping-controls-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  8) [chromium] › tests/e2e/storefront.spec.ts:99:5 › desktop storefront has no uncaught errors on the healthy path
+
+    Test timeout of 4000ms exceeded.
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('button', { name: 'Add Catchall tray' })
+    Expected: visible
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('button', { name: 'Add Catchall tray' }) with timeout 6000ms
+      - waiting for getByRole('button', { name: 'Add Catchall tray' })
+      - Test timeout of 4000ms exceeded.
+
+
+      102 |   await page.setViewportSize({ width: 1440, height: 1050 });
+      103 |   await page.goto('/');
+    > 104 |   await expect(page.getByRole('button', { name: 'Add Catchall tray' })).toBeVisible();
+          |                                                                         ^
+      105 |   await page.screenshot({ path: 'evidence/2026-09-29-desktop.png', fullPage: true });
+      106 |   expect(errors).toEqual([]);
+      107 | });
+        at /Users/abhishek/Documents/datavedam/federated-commerce-retrospective/tests/e2e/storefront.spec.ts:104:73
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/storefront-desktop-storefr-600d0--errors-on-the-healthy-path-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/storefront-desktop-storefr-600d0--errors-on-the-healthy-path-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/storefront-desktop-storefr-600d0--errors-on-the-healthy-path-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/storefront-desktop-storefr-600d0--errors-on-the-healthy-path-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  8 failed
+    [chromium] › tests/e2e/storefront.spec.ts:3:5 › synthetic catalog to checkout to fulfilled order
+    [chromium] › tests/e2e/storefront.spec.ts:22:5 › catalog filters, search and bag removal work without navigation
+    [chromium] › tests/e2e/storefront.spec.ts:36:5 › unavailable catalog remote leaves shell and bag useful, reload recovers
+    [chromium] › tests/e2e/storefront.spec.ts:48:5 › unavailable cart remote offers saved bag summary and recovery
+    [chromium] › tests/e2e/storefront.spec.ts:61:5 › API outage has visible retry and recovers without a full page reload
+    [chromium] › tests/e2e/storefront.spec.ts:70:5 › lost checkout response retries the same key and creates exactly one order
+    [chromium] › tests/e2e/storefront.spec.ts:91:5 › mobile layout fits the viewport and preserves accessible shopping controls
+    [chromium] › tests/e2e/storefront.spec.ts:99:5 › desktop storefront has no uncaught errors on the healthy path

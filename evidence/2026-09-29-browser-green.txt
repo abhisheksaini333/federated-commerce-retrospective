@@ -1,0 +1,23 @@
+
+> federated-commerce-retrospective@1.0.0 test:e2e
+> playwright test
+
+[WebServer] (node:91584) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:91585) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 8 tests using 1 worker
+
+(node:91593) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › tests/e2e/storefront.spec.ts:3:5 › synthetic catalog to checkout to fulfilled order (1.3s)
+  ✓  2 [chromium] › tests/e2e/storefront.spec.ts:22:5 › catalog filters, search and bag removal work without navigation (433ms)
+  ✓  3 [chromium] › tests/e2e/storefront.spec.ts:36:5 › unavailable catalog remote leaves shell and bag useful, reload recovers (526ms)
+  ✓  4 [chromium] › tests/e2e/storefront.spec.ts:48:5 › unavailable cart remote offers saved bag summary and recovery (417ms)
+  ✓  5 [chromium] › tests/e2e/storefront.spec.ts:61:5 › API outage has visible retry and recovers without a full page reload (426ms)
+  ✓  6 [chromium] › tests/e2e/storefront.spec.ts:70:5 › lost checkout response retries the same key and creates exactly one order (528ms)
+  ✓  7 [chromium] › tests/e2e/storefront.spec.ts:91:5 › mobile layout fits the viewport and preserves accessible shopping controls (304ms)
+  ✓  8 [chromium] › tests/e2e/storefront.spec.ts:99:5 › desktop storefront has no uncaught errors on the healthy path (505ms)
+
+  8 passed (6.3s)

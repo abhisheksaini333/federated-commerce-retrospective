@@ -1,0 +1,202 @@
+
+> federated-commerce-retrospective@1.0.0 test
+> tsx --test tests/unit/*.test.ts
+
+✖ catalog exposes synthetic products with integer cents and fresh stock (64.098417ms)
+✖ checkout computes authoritative totals, decrements stock and records the order (16.948625ms)
+✖ concurrent identical retries create one order and decrement stock once (75.350125ms)
+✖ same key with changed payload is rejected (9.921125ms)
+✖ equivalent item ordering replays the original order (18.423875ms)
+✖ rejects invalid quantities, unknown products, duplicates, invalid shipping and forged prices (7.922792ms)
+✖ requires a bounded idempotency key (4.81275ms)
+✖ stock conflict cannot create a partial order (8.331834ms)
+✖ admin can fulfill an order, repeated fulfillment is harmless, invalid transitions fail (8.255625ms)
+✖ invalid JSON and oversized bodies return bounded structured errors (27.601584ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 0
+ℹ fail 10
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1971.879709
+
+✖ failing tests:
+
+test at tests/unit/api.test.ts:10:1
+✖ catalog exposes synthetic products with integer cents and fresh stock (64.098417ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  404 !== 200
+
+      at TestContext.<anonymous> (/Users/abhishek/Documents/datavedam/federated-commerce-retrospective/tests/unit/api.test.ts:12:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1127:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/unit/api.test.ts:18:1
+✖ checkout computes authoritative totals, decrements stock and records the order (16.948625ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  404 !== 201
+
+      at TestContext.<anonymous> (/Users/abhishek/Documents/datavedam/federated-commerce-retrospective/tests/unit/api.test.ts:21:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1127:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:789:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 201,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/unit/api.test.ts:31:1
+✖ concurrent identical retries create one order and decrement stock once (75.350125ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+
+    [
+  +   404,
+  +   404,
+  +   404
+  -   200,
+  -   200,
+  -   201
+    ]
+
+      at TestContext.<anonymous> (/Users/abhishek/Documents/datavedam/federated-commerce-retrospective/tests/unit/api.test.ts:34:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1127:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:789:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 404, 404, 404 ],
+    expected: [ 200, 200, 201 ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/unit/api.test.ts:39:1
+✖ same key with changed payload is rejected (9.921125ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  404 !== 409
+
+      at TestContext.<anonymous> (/Users/abhishek/Documents/datavedam/federated-commerce-retrospective/tests/unit/api.test.ts:43:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1127:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:789:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 409,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/unit/api.test.ts:47:1
+✖ equivalent item ordering replays the original order (18.423875ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  404 !== 200
+
+      at TestContext.<anonymous> (/Users/abhishek/Documents/datavedam/federated-commerce-retrospective/tests/unit/api.test.ts:52:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1127:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:789:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/unit/api.test.ts:56:1
+✖ rejects invalid quantities, unknown products, duplicates, invalid shipping and forged prices (7.922792ms)
+  AssertionError [ERR_ASSERTION]: {"items":[{"productId":"notebook","quantity":0}],"customerName":"Alex Demo","shipping":"standard"}
+
+  404 !== 400
+
+      at TestContext.<anonymous> (/Users/abhishek/Documents/datavedam/federated-commerce-retrospective/tests/unit/api.test.ts:70:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1127:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:789:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 400,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/unit/api.test.ts:74:1
+✖ requires a bounded idempotency key (4.81275ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  404 !== 400
+
+      at TestContext.<anonymous> (/Users/abhishek/Documents/datavedam/federated-commerce-retrospective/tests/unit/api.test.ts:75:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1127:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:789:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 400,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/unit/api.test.ts:79:1
+✖ stock conflict cannot create a partial order (8.331834ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  404 !== 409
+
+      at TestContext.<anonymous> (/Users/abhishek/Documents/datavedam/federated-commerce-retrospective/tests/unit/api.test.ts:82:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1127:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:789:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 409,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/unit/api.test.ts:88:1
+✖ admin can fulfill an order, repeated fulfillment is harmless, invalid transitions fail (8.255625ms)
+  TypeError: Cannot read properties of undefined (reading 'id')
+      at TestContext.<anonymous> (/Users/abhishek/Documents/datavedam/federated-commerce-retrospective/tests/unit/api.test.ts:91:48)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1127:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:789:7)
+
+test at tests/unit/api.test.ts:98:1
+✖ invalid JSON and oversized bodies return bounded structured errors (27.601584ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  404 !== 400
+
+      at TestContext.<anonymous> (/Users/abhishek/Documents/datavedam/federated-commerce-retrospective/tests/unit/api.test.ts:101:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1127:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:789:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 400,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

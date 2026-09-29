@@ -1,0 +1,43 @@
+
+> federated-commerce-retrospective@1.0.0 test
+> tsx --test tests/unit/*.test.ts
+
+✔ catalog exposes synthetic products with integer cents and fresh stock (19.272917ms)
+✔ checkout computes authoritative totals, decrements stock and records the order (14.030292ms)
+✔ concurrent identical retries create one order and decrement stock once (5.4525ms)
+✔ same key with changed payload is rejected (2.615416ms)
+✖ semantically identical object key ordering replays the original order (2.661084ms)
+✔ equivalent item ordering replays the original order (12.061583ms)
+✔ rejects invalid quantities, unknown products, duplicates, invalid shipping and forged prices (8.34325ms)
+✔ requires a bounded idempotency key (2.027625ms)
+✔ stock conflict cannot create a partial order (1.932208ms)
+✔ admin can fulfill an order, repeated fulfillment is harmless, invalid transitions fail (3.094917ms)
+✔ invalid JSON and oversized bodies return bounded structured errors (2.629375ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 10
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 438.058958
+
+✖ failing tests:
+
+test at tests/unit/api.test.ts:69:1
+✖ semantically identical object key ordering replays the original order (2.661084ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  409 !== 200
+
+      at TestContext.<anonymous> (/Users/abhishek/Documents/datavedam/federated-commerce-retrospective/tests/unit/api.test.ts:78:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1127:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:789:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 409,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
