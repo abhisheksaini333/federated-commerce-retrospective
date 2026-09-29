@@ -1,6 +1,6 @@
 # ADR 001: Explicit remote boundaries with host-owned state
 
-Date: 2026-09-29. Status: accepted.
+Status: accepted.
 
 ## Context
 

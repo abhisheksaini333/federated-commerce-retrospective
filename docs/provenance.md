@@ -1,6 +1,6 @@
 # Dependencies and design references
 
-Dependency selection checked on 2026-09-29. `package-lock.json` fixes the complete resolved tree; `package.json` pins direct versions. All application source and CSS product artwork were written for this project. Dependency license notices remain in the corresponding npm distributions.
+`package-lock.json` fixes the complete resolved tree; `package.json` pins direct versions. All application source and CSS product artwork were written for this project. Dependency license notices remain in the corresponding npm distributions.
 
 | Component | Pinned version | Why this version / official reference |
 | --- | --- | --- |

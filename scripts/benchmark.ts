@@ -12,7 +12,7 @@ import { performance as nodePerformance } from "node:perf_hooks";
 import { gzipSync } from "node:zlib";
 import { chromium } from "@playwright/test";
 
-const output = "evidence/2026-09-29-performance.json";
+const output = "evidence/performance.json";
 mkdirSync("evidence", { recursive: true });
 function assets(
   dir: string,
@@ -79,7 +79,7 @@ async function main() {
       { encoding: "utf8" },
     );
     writeFileSync(
-      `evidence/2026-09-29-build-${variant}.txt`,
+      `evidence/build-${variant}.txt`,
       result.stdout + result.stderr,
     );
     if (result.status !== 0)
@@ -185,7 +185,7 @@ async function main() {
         }
       } finally {
         await stop(server);
-        writeFileSync(`evidence/2026-09-29-serve-${variant}.txt`, serverLog);
+        writeFileSync(`evidence/serve-${variant}.txt`, serverLog);
       }
     }
     const report = {

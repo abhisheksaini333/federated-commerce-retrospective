@@ -1,6 +1,6 @@
 # Cart loading experiment
 
-Measured on **2026-09-29 at 12:41:42 UTC** using the final verified source. [Raw JSON](../evidence/2026-09-29-performance.json) retains every sample, resource URL, browser timing, emitted asset and environment detail. [Runner output](../evidence/2026-09-29-benchmark-run.txt) and the [reproducible script](../scripts/benchmark.ts) are included.
+Recorded local measurements for [implementation `db0591f`](https://github.com/abhisheksaini333/federated-commerce-retrospective/tree/db0591f). [Raw JSON](../evidence/performance.json) retains the generated measurement timestamp, every sample, resource URL, browser timing, emitted asset and environment detail. [Runner output](../evidence/benchmark-run.txt) and the [reproducible script](../scripts/benchmark.ts) are included.
 
 ## Question and method
 

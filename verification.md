@@ -1,16 +1,18 @@
 # Verification
 
-Executed locally on **2026-09-29**. Environment: macOS arm64, Apple M3 Pro, Node **25.7.0**, npm **11.10.1**, Playwright **1.63.0**, Chromium **153.0.8010.12**. The separate [Node 22 / Ubuntu verification run](https://github.com/abhisheksaini333/federated-commerce-retrospective/actions/runs/36570230137) passed at commit `db0591f`: typecheck, 11 API tests, three production builds and 10 Chromium checks. Performance figures below remain the recorded local measurements.
+Local environment: macOS arm64, Apple M3 Pro, Node **25.7.0**, npm **11.10.1**, Playwright **1.63.0**, Chromium **153.0.8010.12**. The separate [Node 22 / Ubuntu verification run](https://github.com/abhisheksaini333/federated-commerce-retrospective/actions/runs/36570230137) passed at commit `db0591f`: typecheck, 11 API tests, three production builds and 10 Chromium checks. Performance figures below remain the recorded local measurements.
 
 | Command | Observed result | Evidence |
 | --- | --- | --- |
 | `npm install --no-fund` | Dependency tree installed; lockfile generated | `package-lock.json` |
 | `npx playwright install chromium` | Matching browser installed successfully | Chromium version in benchmark JSON |
-| `npm run verify` | Exit 0: strict typecheck, **11/11 HTTP tests**, all three production builds, **10/10 Chromium tests** | [Complete output](evidence/2026-09-29-verification.txt) |
-| `npm audit --json` | **0** reported vulnerabilities at check time | [Audit JSON](evidence/2026-09-29-dependency-audit.json) |
-| `npm run benchmark` | Both production variants and six browser observations completed | [Run output](evidence/2026-09-29-benchmark-run.txt), [raw observations](evidence/2026-09-29-performance.json), [analysis](docs/performance.md) |
+| `npm run verify` | Exit 0: strict typecheck, **11/11 HTTP tests**, all three production builds, **10/10 Chromium tests** | [Complete output](evidence/verification.txt) |
+| `npm audit --json` | **0** reported vulnerabilities at check time | [Audit JSON](evidence/dependency-audit.json) |
+| `npm run benchmark` | Both production variants and six browser observations completed | [Run output](evidence/benchmark-run.txt), [raw observations](evidence/performance.json), [analysis](docs/performance.md) |
 
-The final browser suite completed in **6.1 seconds**. Node printed a harmless runner environment warning that `NO_COLOR` is ignored when `FORCE_COLOR` is also set. The healthy-browser test independently records JavaScript errors, console errors, failed requests and HTTP responses ≥400 and asserts an empty error list.
+The recorded browser suite completed in **6.1 seconds**. Node printed a harmless runner environment warning that `NO_COLOR` is ignored when `FORCE_COLOR` is also set. The healthy-browser test independently records JavaScript errors, console errors, failed requests and HTTP responses ≥400 and asserts an empty error list.
+
+After the artifact, path and footer cleanup, `npm run verify` passed again: strict typecheck, **11/11 HTTP tests**, all three production builds and **10/10 Chromium tests** in **7.9 seconds**. The [cleanup verification output](evidence/cleanup-verification.txt) records this separate run; desktop and mobile screenshots were refreshed by those browser checks.
 
 ## Acceptance evidence
 
@@ -30,11 +32,13 @@ The final browser suite completed in **6.1 seconds**. Node printed a harmless ru
 | Responsive and healthy rendering | 390 px overflow assertion, desktop no-error assertions, inspected screenshots |
 | Measured baseline | Eager cart component versus deferred cart component; raw build, asset and browser samples retained |
 
-Desktop: [screenshot](evidence/2026-09-29-desktop.png). Mobile: [screenshot](evidence/2026-09-29-mobile.png). Product drawings are CSS illustrations and require no external image service.
+Desktop: [screenshot](evidence/desktop.png). Mobile: [screenshot](evidence/mobile.png). Product drawings are CSS illustrations and require no external image service.
 
 ## Regression sequence
 
-API tests first failed against a route skeleton before implementation: [initial API red](evidence/2026-09-29-api-red.txt). Browser tests first failed against an empty UI after Chromium installation: [initial browser red](evidence/2026-09-29-browser-red.txt). Later targeted tests exposed three defects before their fixes: [storage-disabled retry](evidence/2026-09-29-storage-retry-red.txt), [object-key normalization](evidence/2026-09-29-review-api-red.txt), and [in-flight checkout navigation](evidence/2026-09-29-review-browser-red.txt). The complete final run above includes all regressions passing. Earlier green logs are intermediate run evidence, not the final test count.
+API tests first failed against a route skeleton before implementation: [initial API red](evidence/api-red.txt). Browser tests first failed against an empty UI after Chromium installation: [initial browser red](evidence/browser-red.txt). Later targeted tests exposed three defects before their fixes: [storage-disabled retry](evidence/storage-retry-red.txt), [object-key normalization](evidence/review-api-red.txt), and [in-flight checkout navigation](evidence/review-browser-red.txt). The complete final run above includes all regressions passing. Earlier green logs are intermediate run evidence, not the final test count.
+
+Evidence files now use stable descriptive names. Original text and JSON records remain unchanged, so historical output paths may still appear inside raw logs. The benchmark timestamp and measurements describe the recorded implementation linked in the [performance report](docs/performance.md).
 
 ## Limits
 

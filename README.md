@@ -4,7 +4,7 @@ A working synthetic shop explores the useful boundaries and operational costs of
 
 Browse a six-product collection, filter and search, edit a saved bag, place an idempotent demo order, and fulfill it at the order desk. Separately built catalog and cart remotes can fail without taking down navigation. API and checkout failures preserve the bag and offer recovery.
 
-![Fieldwork Supply desktop](evidence/2026-09-29-desktop.png)
+![Fieldwork Supply desktop](evidence/desktop.png)
 
 ## Run locally
 
@@ -51,4 +51,4 @@ The benchmark rebuilds an eager-cart baseline and an on-demand-cart version, mea
 
 The runnable evidence covers remote composition, shared React, independent failure handling, authoritative checkout totals, concurrent duplicate suppression in one process, transport retry, and a comparison of early versus deferred cart loading. It does not establish production reliability, durable or distributed transactions, security certification, payment correctness, or real-world conversion/performance improvements. Angular, Nx and Next.js extensions are deliberately outside this implementation.
 
-Original application code and CSS artwork are [MIT licensed](LICENSE), copyright 2026. Dependency licenses remain with their owners.
+Original application code and CSS artwork are [MIT licensed](LICENSE). Dependency licenses remain with their owners.

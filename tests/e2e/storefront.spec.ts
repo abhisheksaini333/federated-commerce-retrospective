@@ -210,7 +210,7 @@ test("mobile layout fits the viewport and preserves accessible shopping controls
     ),
   ).toBe(true);
   await page.screenshot({
-    path: "evidence/2026-09-29-mobile.png",
+    path: "evidence/mobile.png",
     fullPage: true,
   });
 });
@@ -236,7 +236,7 @@ test("desktop storefront has no uncaught errors on the healthy path", async ({
     page.getByRole("button", { name: "Add Catchall tray" }),
   ).toBeVisible();
   await page.screenshot({
-    path: "evidence/2026-09-29-desktop.png",
+    path: "evidence/desktop.png",
     fullPage: true,
   });
   expect(errors).toEqual([]);

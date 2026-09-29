@@ -555,7 +555,7 @@ export default function App() {
             <br />
             All products and orders are demonstration data.
           </p>
-          <span>© 2026 Fieldwork Supply</span>
+          <span>Good company, every day.</span>
         </div>
       </footer>
       <div className={`toast ${toast ? "visible" : ""}`} role="status">
