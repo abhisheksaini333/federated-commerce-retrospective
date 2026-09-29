@@ -1,6 +1,6 @@
 # Verification
 
-Executed locally on **2026-09-29**. Environment: macOS arm64, Apple M3 Pro, Node **25.7.0**, npm **11.10.1**, Playwright **1.63.0**, Chromium **153.0.8010.12**. CI is configured for Node 22 on Ubuntu; its hosted run is not included in this local evidence.
+Executed locally on **2026-09-29**. Environment: macOS arm64, Apple M3 Pro, Node **25.7.0**, npm **11.10.1**, Playwright **1.63.0**, Chromium **153.0.8010.12**. The separate [Node 22 / Ubuntu verification run](https://github.com/abhisheksaini333/federated-commerce-retrospective/actions/runs/36570230137) passed at commit `db0591f`: typecheck, 11 API tests, three production builds and 10 Chromium checks. Performance figures below remain the recorded local measurements.
 
 | Command | Observed result | Evidence |
 | --- | --- | --- |
