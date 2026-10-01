@@ -73,7 +73,7 @@ test('audit response sequences are unique and newest first',()=>{
  const event={sequence:1,type:'created',subjectId:'order',at:'2021-01-01T00:00:00Z',details:{}};
  assert.equal(validApiResponse('/api/audit',{events:[event,event]}),false);
  assert.equal(validApiResponse('/api/audit',{events:[event,{...event,sequence:2}]}),false);
- assert.equal(validApiResponse('/api/audit',{events:[{...event,sequence:3},event]}),true);
+ assert.equal(validApiResponse('/api/audit',{events:[{...event,sequence:3},event],retention:{retained:2,firstSequence:1,lastSequence:3,dropped:0}}),true);
 });
 
 test('misspelled order-list query filters are rejected',async()=>{
@@ -143,4 +143,14 @@ test('safe storage removal remains authoritative when durable deletion fails',as
  const {createSafeStorage}=await import('../../apps/host/storage');
  const storage=createSafeStorage(()=>({getItem:()=> 'stale',setItem:()=>{},removeItem:()=>{throw Error('denied');}}));
  storage.set('checkout','saved');storage.remove('checkout');assert.equal(storage.get('checkout'),null);
+});
+
+test('audit retention metadata exposes truncation and validates the response envelope',async()=>{
+ const app=createApp({maxAuditEvents:1});
+ for(let i=0;i<2;i++)await request(app).patch('/api/inventory/notebook').send({delta:1,reason:'Count'});
+ const result=(await request(app).get('/api/audit')).body;
+ assert.deepEqual(result.retention,{retained:1,firstSequence:2,lastSequence:2,dropped:1});
+ assert.equal(validApiResponse('/api/audit',result),true);
+ assert.equal(validApiResponse('/api/audit',{...result,retention:{...result.retention,retained:2}}),false);
+ assert.equal(validApiResponse('/api/audit',(await request(createApp()).get('/api/audit')).body),true);
 });

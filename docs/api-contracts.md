@@ -27,3 +27,5 @@ Statistics sum stock and order values exactly before converting to JSON numbers.
 Inventory audit details include the trimmed NFC-normalized adjustment reason for both count and delta changes. These events are available through the protected administrative audit endpoint.
 
 Storefront search matches product names, descriptions and displayed category names using the same normalized case-insensitive policy.
+
+`GET /api/audit` includes `retention` with retained event count, first/last retained sequence (null when empty), and the number dropped by the configured limit. Events remain newest first. Consumers validate this envelope to distinguish bounded history from a complete audit trail.

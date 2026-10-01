@@ -78,7 +78,7 @@ export function createApp(options: AppOptions = {}) {
   );
   app.get("/api/products", (_req, res) => res.set('ETag', `"inventory-${inventoryRevision}"`).json({ products, revision: inventoryRevision }));
   app.get('/api/metrics',(_req,res)=>res.json(metrics.snapshot()));
-  app.get('/api/audit',(_req,res)=>res.json({events:[...events].reverse()}));
+  app.get('/api/audit',(_req,res)=>res.json({events:[...events].reverse(),retention:{retained:events.length,firstSequence:events[0]?.sequence??null,lastSequence:events[events.length-1]?.sequence??null,dropped:eventSequence-events.length}}));
   app.get('/api/stats',(_req,res)=>{
     const values=[...orders.values()];
     const activeTotal=values.filter(order=>order.status!=='cancelled').reduce((sum,order)=>sum+BigInt(order.totalCents),0n);
